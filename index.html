@@ -1577,9 +1577,28 @@ document.getElementById('param-case-val')?.addEventListener('input',updateCarteT
 appliquerParams();
 renderDashboard();
 
-// MISE EN CACHE HORS LIGNE
+// MISE EN CACHE HORS LIGNE - chemin relatif pour GitHub Pages
 if('serviceWorker' in navigator && window.location.protocol !== 'file:'){
-navigator.serviceWorker.register('/sw.js').catch(()=>{});
+// Utiliser un chemin relatif pour fonctionner sur GitHub Pages (/popote/)
+const swPath = new URL('sw.js', window.location.href).href;
+const scope = new URL('./', window.location.href).href;
+navigator.serviceWorker.register(swPath, {scope: scope})
+.then(reg => {
+// Forcer la mise en cache de la page dès l'installation
+reg.addEventListener('updatefound', () => {
+const sw = reg.installing;
+sw.addEventListener('statechange', () => {
+if(sw.state === 'activated'){
+caches.open('popote-v4').then(cache => cache.add(window.location.href));
+}
+});
+});
+// Si déjà actif, mettre en cache maintenant
+if(reg.active){
+caches.open('popote-v4').then(cache => cache.add(window.location.href));
+}
+})
+.catch(e => console.log('SW error:', e));
 }
 
 </script>
