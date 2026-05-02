@@ -1,10 +1,12 @@
-const CACHE = ‘popote-v3’;
+const CACHE = ‘popote-v4’;
 
 self.addEventListener(‘install’, e => {
 e.waitUntil(
 caches.open(CACHE).then(cache => {
-return cache.addAll([’/’, ‘/index.html’, ‘/manifest.json’, ‘/sw.js’]);
-}).catch(() => {})
+return Promise.all([
+cache.add(new Request(self.location.origin + self.registration.scope.replace(self.location.origin,’’) + ‘index.html’, {cache: ‘reload’})),
+]).catch(() => {});
+})
 );
 self.skipWaiting();
 });
@@ -21,19 +23,23 @@ self.clients.claim();
 self.addEventListener(‘fetch’, e => {
 if(e.request.method !== ‘GET’) return;
 e.respondWith(
-caches.open(CACHE).then(cache =>
-cache.match(e.request).then(cached => {
-if(cached){
-fetch(e.request).then(resp => {
-if(resp && resp.status === 200) cache.put(e.request, resp.clone());
-}).catch(() => {});
+caches.open(CACHE).then(async cache => {
+const cached = await cache.match(e.request);
+if(cached) {
+// Mettre à jour en arrière-plan
+fetch(e.request).then(r => { if(r && r.status===200) cache.put(e.request, r.clone()); }).catch(()=>{});
 return cached;
 }
-return fetch(e.request).then(resp => {
+try {
+const resp = await fetch(e.request);
 if(resp && resp.status === 200) cache.put(e.request, resp.clone());
 return resp;
-}).catch(() => cached || new Response(‘Hors ligne’, {status:200}));
+} catch(err) {
+// Hors ligne : retourner n’importe quelle page en cache
+const keys = await cache.keys();
+if(keys.length) return cache.match(keys[0]);
+return new Response(‘Hors ligne’, {status:200});
+}
 })
-)
 );
 });
