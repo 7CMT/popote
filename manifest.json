@@ -1,0 +1,24 @@
+{
+  "name": "Popote Manager",
+  "short_name": "Popote",
+  "description": "Gestion cartes popote, stock et caisse",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0f0f13",
+  "theme_color": "#f0b429",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

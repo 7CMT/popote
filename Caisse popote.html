@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Popote">
+<meta name="theme-color" content="#f0b429">
+<link rel="manifest" href="/manifest.json">
+<title>Popote Manager</title>
+<style>
+:root {
+--bg:#0f0f13;--surface:#18181f;--surface2:#22222d;--surface3:#2a2a38;
+--accent:#f0b429;--green:#34d399;--red:#f87171;--blue:#60a5fa;--purple:#a78bfa;
+--text:#f0f0f5;--text2:#9999b0;--border:#2e2e3e;--radius:12px;--radius-sm:8px;
+--font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+--font-title: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+--font-mono: 'Courier New', 'Lucida Console', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-main);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;overflow-x:hidden;}
+#app{display:flex;flex-direction:column;min-height:100vh;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;}
+.logo{font-family:var(--font-title);font-weight:800;font-size:20px;color:var(--accent);letter-spacing:-0.5px;flex-shrink:0;}
+.logo span{color:var(--text2);font-weight:400;font-size:12px;display:block;line-height:1;}
+nav{display:flex;gap:4px;flex:1;overflow-x:auto;padding-bottom:2px;}
+nav::-webkit-scrollbar{height:2px;}nav::-webkit-scrollbar-thumb{background:var(--border);}
+.nav-btn{background:none;border:none;color:var(--text2);padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-main);font-size:13px;font-weight:500;white-space:nowrap;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.nav-btn:hover{background:var(--surface2);color:var(--text);}
+.nav-btn.active{background:var(--accent);color:#000;font-weight:700;}
+main{flex:1;padding:20px;max-width:1200px;margin:0 auto;width:100%;}
+.page{display:none;}.page.active{display:block;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+.card-title{font-family:var(--font-title);font-size:16px;font-weight:700;margin-bottom:16px;color:var(--accent);display:flex;align-items:center;gap:8px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:700px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr 1fr;}}
+.stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-family:var(--font-mono);}
+.stat-value{font-family:var(--font-title);font-size:22px;font-weight:700;}
+.stat-value.green{color:var(--green);}.stat-value.red{color:var(--red);}.stat-value.yellow{color:var(--accent);}.stat-value.blue{color:var(--blue);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:var(--font-main);font-size:13px;font-weight:600;transition:all 0.15s;}
+.btn-primary{background:var(--accent);color:#000;}.btn-primary:hover{background:#ffc94d;}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}.btn-secondary:hover{background:var(--surface3);}
+.btn-danger{background:#3d1414;color:var(--red);border:1px solid #5a2020;}.btn-danger:hover{background:#5a2020;}
+.btn-green{background:#0d3327;color:var(--green);border:1px solid #1a5240;}.btn-green:hover{background:#1a5240;}
+.btn-sm{padding:6px 12px;font-size:12px;}.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
+.form-input,.form-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:10px 14px;font-family:var(--font-main);font-size:14px;outline:none;transition:border-color 0.2s;}
+.form-input:focus,.form-select:focus{border-color:var(--accent);}
+.form-select option{background:var(--surface2);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:10px 12px;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:0.7px;font-family:var(--font-mono);border-bottom:1px solid var(--border);}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
+.popote-card-visual{background:linear-gradient(135deg,#1a1a2e,#2a1a3e);border:2px solid var(--accent);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+.popote-card-visual::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(240,180,41,0.2),transparent);border-radius:50%;}
+.popote-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:12px;}
+.popote-case{aspect-ratio:1;border-radius:4px;border:1.5px solid rgba(240,180,41,0.3);cursor:pointer;transition:all 0.15s;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:8px;}
+.popote-case.checked{background:var(--accent);border-color:var(--accent);}
+.popote-case.checked::after{content:'✓';color:#000;font-weight:bold;}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--font-mono);}
+.badge-green{background:#0d3327;color:var(--green);}.badge-red{background:#3d1414;color:var(--red);}
+.badge-yellow{background:#3d2e0a;color:var(--accent);}.badge-blue{background:#0d2140;color:var(--blue);}.badge-gray{background:var(--surface2);color:var(--text2);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;}
+.modal-title{font-family:var(--font-title);font-size:18px;font-weight:700;margin-bottom:20px;color:var(--accent);}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.alert{padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:13px;}
+.alert-warning{background:#3d2e0a;border:1px solid #7a5c14;color:var(--accent);}
+.alert-danger{background:#3d1414;border:1px solid #7a2020;color:var(--red);}
+.alert-success{background:#0d3327;border:1px solid #1a5240;color:var(--green);}
+.alert-blue{background:#0d2140;border:1px solid #1a3a6e;color:var(--blue);}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.history-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.history-item:last-child{border-bottom:none;}
+.history-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.history-body{flex:1;}
+.history-title{font-weight:500;font-size:13px;}
+.history-detail{font-size:11px;color:var(--text2);margin-top:2px;font-family:var(--font-mono);}
+.history-amount{font-family:var(--font-mono);font-weight:600;font-size:14px;text-align:right;flex-shrink:0;}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 24px;border-radius:30px;font-size:13px;font-weight:500;z-index:999;transition:transform 0.3s ease;white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+.search-bar{display:flex;gap:10px;margin-bottom:16px;}
+.flex{display:flex;}.flex-between{display:flex;justify-content:space-between;align-items:center;}.flex-end{display:flex;justify-content:flex-end;}
+.gap-8{gap:8px;}.gap-12{gap:12px;}.mb-16{margin-bottom:16px;}.mt-16{margin-top:16px;}
+.mono{font-family:var(--font-mono);}.text-green{color:var(--green);}.text-red{color:var(--red);}.text-yellow{color:var(--accent);}.text-blue{color:var(--blue);}.text-muted{color:var(--text2);}.fw-700{font-weight:700;}
+.section-title{font-family:var(--font-title);font-weight:700;font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;margin-top:20px;}
+.section-title:first-child{margin-top:0;}
+
+/* VENTE LAYOUT */
+.vente-layout{display:grid;grid-template-columns:1fr 350px;gap:16px;align-items:start;}
+@media(max-width:900px){.vente-layout{grid-template-columns:1fr;}}
+
+/* GRILLE ARTICLES BOUTONS */
+.articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.article-btn{background:var(–surface2);border:2px solid var(–border);border-radius:var(–radius);padding:16px 12px;cursor:pointer;text-align:center;transition:all 0.12s;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;}
+.article-btn:hover{border-color:var(–accent);background:var(–surface3);}
+.article-btn:active{transform:scale(0.94);}
+.article-btn.zero-stock{opacity:0.35;cursor:not-allowed;}
+.article-btn.has-qty{border-color:var(–accent);background:#2d2410;}
+.article-btn-nom{font-weight:700;font-size:15px;margin-bottom:5px;line-height:1.2;}
+.article-btn-prix{font-family:var(–font-mono);font-size:13px;color:var(–accent);font-weight:600;}
+.article-btn-stock{font-size:11px;color:var(–text2);margin-top:5px;}
+.article-btn-qty-badge{position:absolute;top:-10px;right:-10px;background:var(–accent);color:#000;font-weight:800;font-size:14px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(–font-title);box-shadow:0 2px 8px rgba(240,180,41,0.4);}
+
+/* TICKET */
+.ticket{background:var(–surface2);border:1px solid var(–border);border-radius:var(–radius);padding:18px;position:sticky;top:80px;}
+.ticket-title{font-family:var(–font-title);font-weight:700;font-size:13px;color:var(–text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px dashed var(–border);text-align:center;}
+.ticket-line{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(–border);font-size:13px;}
+.ticket-line:last-of-type{border-bottom:none;}
+.ticket-line-left{flex:1;}
+.ticket-line-nom{font-weight:600;}
+.ticket-line-qty{display:flex;align-items:center;gap:8px;margin:0 10px;}
+.qty-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(–border);background:var(–surface3);color:var(–text);cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all 0.1s;line-height:1;}
+.qty-btn:active{transform:scale(0.88);background:var(–accent);color:#000;}
+.ticket-line-prix{font-family:var(–font-mono);color:var(–accent);font-weight:600;min-width:60px;text-align:right;}
+.ticket-total{background:var(–surface3);border-radius:10px;padding:14px;margin-top:14px;text-align:center;}
+.ticket-total-label{font-size:11px;color:var(–text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.ticket-total-value{font-family:var(–font-title);font-size:32px;font-weight:800;color:var(–accent);}
+.ticket-empty{text-align:center;color:var(–text2);font-size:13px;padding:32px 0;line-height:2;}
+
+/* PAIEMENT CHOIX */
+.paiement-choix{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;}
+.paiement-card{border:2px solid var(–border);border-radius:var(–radius);padding:16px 10px;cursor:pointer;text-align:center;transition:all 0.15s;background:var(–surface2);}
+.paiement-card:hover{border-color:var(–accent);}
+.paiement-card.selected{border-color:var(–accent);background:#2d2410;}
+.paiement-card .pc-icon{font-size:24px;margin-bottom:6px;}
+.paiement-card .pc-label{font-weight:600;font-size:13px;}
+.paiement-card .pc-sub{font-size:11px;color:var(–text2);margin-top:3px;}
+
+.ticket-paiement-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.ticket-paiement-btns .paiement-card{padding:10px 6px;}
+.ticket-paiement-btns .paiement-card .pc-icon{font-size:20px;margin-bottom:4px;}
+.ticket-paiement-btns .paiement-card .pc-label{font-size:11px;}
+
+/* PARAMETRES */
+.color-choice{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all 0.15s;flex-shrink:0;}
+.color-choice.selected{border-color:#fff;box-shadow:0 0 0 2px var(–accent);transform:scale(1.15);}
+.color-choice:hover{transform:scale(1.1);}
+.theme-choice{transition:all 0.15s;}
+.taille-btn-active{background:var(–accent)!important;color:#000!important;}
+</style>
+
+</head>
+<body>
+<div id="app">
+<header>
+<div class="logo">🍲 Popote<span>Gestion</span></div>
+<nav>
+<button class="nav-btn active" onclick="showPage('dashboard')" id="nav-dashboard">📊 Tableau de bord</button>
+<button class="nav-btn" onclick="showPage('clients')" id="nav-clients">👥 Clients</button>
+<button class="nav-btn" onclick="showPage('vente')" id="nav-vente">🛒 Vente</button>
+<button class="nav-btn" onclick="showPage('stock')" id="nav-stock">📦 Stock</button>
+<button class="nav-btn" onclick="showPage('caisse')" id="nav-caisse">💰 Caisse</button>
+<button class="nav-btn" onclick="showPage('historique')" id="nav-historique">📋 Historique</button>
+<button class="nav-btn" onclick="showPage('parametres')" id="nav-parametres">⚙️ Paramètres</button>
+</nav>
+</header>
+<main>
+
+<!-- DASHBOARD -->
+
+<div class="page active" id="page-dashboard">
+<div id="alerts-zone"></div>
+<div class="grid-4 mb-16" id="dashboard-stats"></div>
+<div class="grid-2">
+<div class="card"><div class="card-title">💰 Caisse & Compte</div><div id="caisse-summary"></div></div>
+<div class="card"><div class="card-title">📦 Stock valorisé</div><div id="stock-summary"></div></div>
+</div>
+<div class="card"><div class="card-title">📊 Vue d'ensemble — Cartes & Stock</div><div id="argent-immobilise"></div></div>
+<div class="card"><div class="card-title">📋 Dernières transactions</div><div id="recent-history"></div></div>
+</div>
+
+<!-- CLIENTS -->
+
+<div class="page" id="page-clients">
+<div class="flex-between mb-16">
+<div class="card-title" style="margin:0">👥 Clients & Cartes Popote</div>
+<button class="btn btn-primary" onclick="openModal('modal-new-client')">+ Nouveau client</button>
+</div>
+<div class="search-bar">
+<input class="form-input" id="search-client" placeholder="🔍 Rechercher..." oninput="renderClients()">
+</div>
+<div id="clients-list"></div>
+</div>
+
+<!-- VENTE -->
+
+<div class="page" id="page-vente">
+<div class="flex-between mb-16">
+<div class="card-title" style="margin:0">🛒 Caisse / Vente</div>
+<button class="btn btn-secondary btn-sm" onclick="venteReset()">🔄 Nouveau ticket</button>
+</div>
+<div class="card" style="margin-bottom:14px;padding:14px">
+<div class="flex-between gap-8">
+<div style="flex:1">
+<label class="form-label">Client</label>
+<select class="form-select" id="vente-client" onchange="venteSelectClient()">
+<option value="">-- Choisir un client --</option>
+</select>
+</div>
+<div id="vente-client-badge" style="padding-top:20px"></div>
+</div>
+<div id="vente-carte-info" style="margin-top:10px"></div>
+</div>
+<div class="vente-layout">
+<div>
+<div style="font-family:var(--font-title);font-weight:700;font-size:14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+Appuie pour ajouter au ticket ↓
+</div>
+<div class="articles-grid" id="articles-grid"></div>
+</div>
+<div>
+<div class="ticket">
+<div class="ticket-title">🧾 Ticket de caisse</div>
+<div id="ticket-lines"></div>
+<div id="ticket-total-zone"></div>
+<div id="ticket-paiement-zone" style="margin-top:14px"></div>
+<div id="ticket-valider-zone" style="margin-top:10px"></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- STOCK -->
+
+<div class="page" id="page-stock">
+<div class="flex-between mb-16">
+<div class="card-title" style="margin:0">📦 Stock</div>
+<div class="flex gap-8">
+<button class="btn btn-secondary" onclick="openCoursesModal()">🛍️ Courses</button>
+<button class="btn btn-primary" onclick="openModal('modal-new-article')">+ Article</button>
+</div>
+</div>
+<div id="stock-alerts"></div>
+<div class="card">
+<div class="search-bar">
+<input class="form-input" id="search-stock" placeholder="🔍 Rechercher..." oninput="renderStock()">
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Article</th><th>Stock</th><th>Min.</th><th>Prix achat</th><th>Prix vente</th><th>Marge</th><th>Actions</th></tr></thead>
+<tbody id="stock-tbody"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- CAISSE -->
+
+<div class="page" id="page-caisse">
+<div class="card-title">💰 Caisse</div>
+<div class="grid-3 mb-16" id="caisse-stats"></div>
+<div class="grid-2">
+<div class="card"><div class="card-title">💵 Espèces</div><div id="caisse-liquide-detail"></div></div>
+<div class="card"><div class="card-title">💳 Compte CB</div><div id="caisse-compte-detail"></div></div>
+</div>
+<div class="card">
+<div class="card-title">📥 Rentrée d'argent</div>
+<div class="grid-2">
+<div>
+<div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" id="rentree-montant" placeholder="0.00" step="0.01"></div>
+<div class="form-group"><label class="form-label">Motif</label><input class="form-input" type="text" id="rentree-motif" placeholder="Ex: remboursement, don, subvention..."></div>
+<div class="form-group"><label class="form-label">Destination</label>
+<select class="form-select" id="rentree-source">
+<option value="espece">💵 Caisse espèces</option>
+<option value="carte">💳 Compte bancaire</option>
+</select>
+</div>
+</div>
+<div style="display:flex;align-items:flex-end">
+<button class="btn btn-green" onclick="rentreeCaisse()" style="width:100%;justify-content:center">📥 Enregistrer la rentrée</button>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-title">📤 Sortie de caisse</div>
+<div class="grid-2">
+<div>
+<div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" id="sortie-montant" placeholder="0.00" step="0.01"></div>
+<div class="form-group"><label class="form-label">Motif</label><input class="form-input" type="text" id="sortie-motif" placeholder="Ex: achat matériel..."></div>
+<div class="form-group"><label class="form-label">Source</label>
+<select class="form-select" id="sortie-source">
+<option value="espece">💵 Caisse espèces</option>
+<option value="carte">💳 Compte bancaire</option>
+</select>
+</div>
+</div>
+<div style="display:flex;align-items:flex-end">
+<button class="btn btn-danger" onclick="sortieCaisse()" style="width:100%;justify-content:center">📤 Enregistrer</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- HISTORIQUE -->
+
+<div class="page" id="page-historique">
+<div class="flex-between mb-16">
+<div class="card-title" style="margin:0">📋 Historique</div>
+<button class="btn btn-secondary btn-sm" onclick="exportCSV()">📥 Export CSV</button>
+</div>
+<div class="card">
+<div class="search-bar">
+<input class="form-input" id="search-history" placeholder="🔍 Rechercher..." oninput="renderHistory()">
+<select class="form-select" id="filter-history" style="width:180px" onchange="renderHistory()">
+<option value="">Tous</option>
+<option value="vente">Ventes</option>
+<option value="achat_carte">Ouverture carte</option>
+<option value="paiement_dette">Paiement dette</option>
+<option value="courses">Courses</option>
+<option value="sortie">Sorties</option>
+<option value="rentree">Rentrées</option>
+</select>
+</div>
+<div id="history-list"></div>
+</div>
+</div>
+
+<!-- PARAMETRES -->
+
+<div class="page" id="page-parametres">
+<div class="card-title">⚙️ Paramètres & Personnalisation</div>
+
+<!-- Identité -->
+
+<div class="card">
+<div class="card-title">🏠 Identité de l'établissement</div>
+<div class="grid-2">
+<div>
+<div class="form-group">
+<label class="form-label">Nom de l'établissement</label>
+<input class="form-input" id="param-nom" placeholder="Ex: Chez Marcel, La Popote...">
+</div>
+<div class="form-group">
+<label class="form-label">Sous-titre / description</label>
+<input class="form-input" id="param-soustitre" placeholder="Ex: Bar associatif, Cantine...">
+</div>
+<div class="form-group">
+<label class="form-label">Couleur principale</label>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap" id="param-couleurs">
+<div class="color-choice selected" data-color="#f0b429" style="background:#f0b429" onclick="selectCouleur('#f0b429')"></div>
+<div class="color-choice" data-color="#34d399" style="background:#34d399" onclick="selectCouleur('#34d399')"></div>
+<div class="color-choice" data-color="#60a5fa" style="background:#60a5fa" onclick="selectCouleur('#60a5fa')"></div>
+<div class="color-choice" data-color="#f87171" style="background:#f87171" onclick="selectCouleur('#f87171')"></div>
+<div class="color-choice" data-color="#a78bfa" style="background:#a78bfa" onclick="selectCouleur('#a78bfa')"></div>
+<div class="color-choice" data-color="#fb923c" style="background:#fb923c" onclick="selectCouleur('#fb923c')"></div>
+<div class="color-choice" data-color="#e879f9" style="background:#e879f9" onclick="selectCouleur('#e879f9')"></div>
+<div class="color-choice" data-color="#2dd4bf" style="background:#2dd4bf" onclick="selectCouleur('#2dd4bf')"></div>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group">
+<label class="form-label">Logo / Image (affiché en haut)</label>
+<div id="param-logo-preview" style="width:100%;height:100px;background:var(--surface2);border:2px dashed var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-bottom:10px;overflow:hidden">
+<span style="color:var(--text2);font-size:13px">Aucun logo</span>
+</div>
+<input type="file" id="param-logo-input" accept="image/*" style="display:none" onchange="chargerLogo(this)">
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary btn-sm" onclick="document.getElementById('param-logo-input').click()">📁 Choisir une image</button>
+<button class="btn btn-danger btn-sm" onclick="supprimerLogo()">✕ Supprimer</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Thème -->
+
+<div class="card">
+<div class="card-title">🎨 Thème & Affichage</div>
+<div class="grid-2">
+<div>
+<div class="form-group">
+<label class="form-label">Thème</label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="theme-choice selected" id="theme-sombre" onclick="selectTheme('sombre')" style="background:#0f0f13;border:2px solid var(--accent);border-radius:10px;padding:14px;cursor:pointer;text-align:center">
+<div style="font-size:20px">🌙</div>
+<div style="color:#f0f0f5;font-size:12px;margin-top:4px;font-weight:600">Sombre</div>
+</div>
+<div class="theme-choice" id="theme-clair" onclick="selectTheme('clair')" style="background:#f5f5f0;border:2px solid #ddd;border-radius:10px;padding:14px;cursor:pointer;text-align:center">
+<div style="font-size:20px">☀️</div>
+<div style="color:#111;font-size:12px;margin-top:4px;font-weight:600">Clair</div>
+</div>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group">
+<label class="form-label">Taille du texte</label>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" id="taille-petit" onclick="selectTaille('petit')" style="flex:1;justify-content:center">A<small> Petit</small></button>
+<button class="btn btn-secondary" id="taille-moyen" onclick="selectTaille('moyen')" style="flex:1;justify-content:center">A Moyen</button>
+<button class="btn btn-secondary" id="taille-grand" onclick="selectTaille('grand')" style="flex:1;justify-content:center"><big>A</big> Grand</button>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">Taille des boutons articles (vente)</label>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" id="btn-petit" onclick="selectTailleBtn('petit')" style="flex:1;justify-content:center">Petit</button>
+<button class="btn btn-secondary" id="btn-moyen" onclick="selectTailleBtn('moyen')" style="flex:1;justify-content:center">Moyen</button>
+<button class="btn btn-secondary" id="btn-grand" onclick="selectTailleBtn('grand')" style="flex:1;justify-content:center">Grand</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Cartes Popote -->
+
+<div class="card">
+<div class="card-title">🍲 Cartes Popote</div>
+<div class="grid-2">
+<div>
+<div class="form-group">
+<label class="form-label">Valeur d'une case (€)</label>
+<input class="form-input" type="number" id="param-case-val" step="0.25" min="0.25" placeholder="0.25">
+</div>
+<div class="form-group">
+<label class="form-label">Nombre de cases par carte</label>
+<input class="form-input" type="number" id="param-cases-n" min="4" max="100" placeholder="40">
+<div style="font-size:11px;color:var(--text2);margin-top:4px" id="param-carte-total">Valeur totale : 10,00 €</div>
+</div>
+</div>
+<div>
+<div class="form-group">
+<label class="form-label">Couleur des cases cochées</label>
+<div style="display:flex;gap:10px;flex-wrap:wrap" id="param-case-couleurs">
+<div class="color-choice selected" data-color="#f0b429" style="background:#f0b429" onclick="selectCaseCouleur('#f0b429')"></div>
+<div class="color-choice" data-color="#34d399" style="background:#34d399" onclick="selectCaseCouleur('#34d399')"></div>
+<div class="color-choice" data-color="#60a5fa" style="background:#60a5fa" onclick="selectCaseCouleur('#60a5fa')"></div>
+<div class="color-choice" data-color="#f87171" style="background:#f87171" onclick="selectCaseCouleur('#f87171')"></div>
+<div class="color-choice" data-color="#a78bfa" style="background:#a78bfa" onclick="selectCaseCouleur('#a78bfa')"></div>
+<div class="color-choice" data-color="#2dd4bf" style="background:#2dd4bf" onclick="selectCaseCouleur('#2dd4bf')"></div>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">Aperçu de la carte</label>
+<div style="background:linear-gradient(135deg,#1a1a2e,#2a1a3e);border:2px solid var(--accent);border-radius:10px;padding:12px">
+<div style="font-family:var(--font-title);font-weight:700;color:var(--accent);font-size:13px">🍲 POPOTE</div>
+<div id="param-carte-preview" style="display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-top:8px"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Boutons -->
+
+<div style="display:flex;gap:12px;justify-content:flex-end">
+<button class="btn btn-secondary" onclick="resetParametres()">↺ Réinitialiser</button>
+<button class="btn btn-primary" onclick="sauvegarderParametres()">✓ Sauvegarder</button>
+</div>
+</div>
+
+</main>
+</div>
+
+<!-- ======== MODALS ======== -->
+
+<!-- Nouveau client -->
+
+<div class="modal-overlay" id="modal-new-client">
+<div class="modal">
+<div class="modal-title">👤 Nouveau client</div>
+<div class="form-group"><label class="form-label">Nom complet</label><input class="form-input" id="nc-nom" placeholder="Prénom Nom"></div>
+<div class="form-group"><label class="form-label">Téléphone (optionnel)</label><input class="form-input" id="nc-tel" placeholder="06..."></div>
+<hr class="divider">
+<div class="form-label" style="margin-bottom:10px">Comment règle-t-il la carte Popote ? (10 €)</div>
+<div class="paiement-choix" id="nc-paiement-choix">
+<div class="paiement-card" onclick="selectPaiementClient('espece')" data-mode="espece">
+<div class="pc-icon">💵</div><div class="pc-label">Espèces</div><div class="pc-sub">Caisse liquide</div>
+</div>
+<div class="paiement-card" onclick="selectPaiementClient('carte')" data-mode="carte">
+<div class="pc-icon">💳</div><div class="pc-label">Carte CB</div><div class="pc-sub">Compte</div>
+</div>
+<div class="paiement-card" onclick="selectPaiementClient('dette')" data-mode="dette">
+<div class="pc-icon">🔖</div><div class="pc-label">À dette</div><div class="pc-sub">Plus tard</div>
+</div>
+</div>
+<div id="nc-paiement-info" style="margin-top:10px"></div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal('modal-new-client')">Annuler</button>
+<button class="btn btn-primary" onclick="createClient()">Créer le client</button>
+</div>
+</div>
+</div>
+
+<!-- Détail client -->
+
+<div class="modal-overlay" id="modal-client-detail">
+<div class="modal" style="max-width:620px">
+<div class="modal-title" id="client-detail-title"></div>
+<div id="client-detail-body"></div>
+<div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-client-detail')">Fermer</button></div>
+</div>
+</div>
+
+<!-- Paiement dette -->
+
+<div class="modal-overlay" id="modal-paiement-dette">
+<div class="modal">
+<div class="modal-title">💳 Paiement de dette</div>
+<div id="dette-info"></div>
+<div class="form-group"><label class="form-label">Montant à régler (€)</label><input class="form-input" type="number" id="dette-montant" step="0.25"></div>
+<div class="form-group"><label class="form-label">Mode de paiement</label>
+<select class="form-select" id="dette-paiement">
+<option value="espece">💵 Espèces</option>
+<option value="carte">💳 Carte bancaire</option>
+</select>
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal('modal-paiement-dette')">Annuler</button>
+<button class="btn btn-primary" onclick="validerPaiementDette()">Valider</button>
+</div>
+</div>
+</div>
+
+<!-- Nouvelle carte depuis fiche client -->
+
+<div class="modal-overlay" id="modal-nouvelle-carte">
+<div class="modal">
+<div class="modal-title">🍲 Nouvelle carte Popote</div>
+<div id="nouvelle-carte-info"></div>
+<div class="form-label" style="margin-bottom:10px">Comment règle-t-il la carte ? (10 €)</div>
+<div class="paiement-choix" id="nouvcarte-choix">
+<div class="paiement-card" onclick="selectNouvelleCartePaiement('espece')" data-mode="espece">
+<div class="pc-icon">💵</div><div class="pc-label">Espèces</div>
+</div>
+<div class="paiement-card" onclick="selectNouvelleCartePaiement('carte')" data-mode="carte">
+<div class="pc-icon">💳</div><div class="pc-label">Carte CB</div>
+</div>
+<div class="paiement-card" onclick="selectNouvelleCartePaiement('dette')" data-mode="dette">
+<div class="pc-icon">🔖</div><div class="pc-label">À dette</div>
+</div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal('modal-nouvelle-carte')">Annuler</button>
+<button class="btn btn-primary" onclick="validerNouvelleCarte()">Ouvrir la carte</button>
+</div>
+</div>
+</div>
+
+<!-- Nouvel article -->
+
+<div class="modal-overlay" id="modal-new-article">
+<div class="modal">
+<div class="modal-title">📦 Nouvel article</div>
+<div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="na-nom" placeholder="Ex: Café, Yaourt..."></div>
+<div class="grid-2">
+<div class="form-group"><label class="form-label">Prix achat (€)</label><input class="form-input" type="number" id="na-achat" placeholder="0.00" step="0.01"></div>
+<div class="form-group"><label class="form-label">Prix vente (€)</label><input class="form-input" type="number" id="na-vente" placeholder="0.00" step="0.01"></div>
+</div>
+<div class="grid-2">
+<div class="form-group"><label class="form-label">Quantité initiale</label><input class="form-input" type="number" id="na-qte" placeholder="0" min="0"></div>
+<div class="form-group"><label class="form-label">Stock minimum</label><input class="form-input" type="number" id="na-min" placeholder="2" min="0"></div>
+</div>
+<div class="form-group"><label class="form-label">Unité (optionnel)</label><input class="form-input" id="na-unite" placeholder="pièce, kg, L..."></div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal('modal-new-article')">Annuler</button>
+<button class="btn btn-primary" onclick="createArticle()">Créer</button>
+</div>
+</div>
+</div>
+
+<!-- Modifier article -->
+
+<div class="modal-overlay" id="modal-edit-article">
+<div class="modal">
+<div class="modal-title">✏️ Modifier l'article</div>
+<input type="hidden" id="ea-id">
+<div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="ea-nom"></div>
+<div class="grid-2">
+<div class="form-group"><label class="form-label">Prix achat (€)</label><input class="form-input" type="number" id="ea-achat" step="0.01"></div>
+<div class="form-group"><label class="form-label">Prix vente (€)</label><input class="form-input" type="number" id="ea-vente" step="0.01"></div>
+</div>
+<div class="grid-2">
+<div class="form-group"><label class="form-label">Quantité en stock</label><input class="form-input" type="number" id="ea-qte" min="0"></div>
+<div class="form-group"><label class="form-label">Stock minimum</label><input class="form-input" type="number" id="ea-min" min="0"></div>
+</div>
+<div class="form-group"><label class="form-label">Unité</label><input class="form-input" id="ea-unite"></div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal('modal-edit-article')">Annuler</button>
+<button class="btn btn-primary" onclick="saveArticle()">Enregistrer</button>
+</div>
+</div>
+</div>
+
+<!-- Courses -->
+
+<div class="modal-overlay" id="modal-courses">
+<div class="modal" style="max-width:560px">
+<div class="modal-title">🛍️ Enregistrer des courses</div>
+<div class="form-group"><label class="form-label">Montant total (€)</label><input class="form-input" type="number" id="courses-montant" placeholder="0.00" step="0.01"></div>
+<div class="form-group"><label class="form-label">Payé avec</label>
+<select class="form-select" id="courses-paiement">
+<option value="espece">💵 Espèces</option>
+<option value="carte">💳 Carte bancaire</option>
+</select>
+</div>
+<div class="form-group"><label class="form-label">Note (optionnel)</label><input class="form-input" id="courses-note" placeholder="Ex: Supermarché, marché..."></div>
+<hr class="divider">
+<div class="section-title">Mise à jour du stock</div>
+<div id="courses-articles-list"></div>
+<button class="btn btn-secondary btn-sm" onclick="coursesAddLine()">+ Ajouter un article</button>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal('modal-courses')">Annuler</button>
+<button class="btn btn-primary" onclick="validerCourses()">✓ Valider</button>
+</div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ================================================
+// DB LOCALE
+// ================================================
+const DB_KEY='popote_db_v2';
+function loadDB(){try{const r=localStorage.getItem(DB_KEY);if(r)return JSON.parse(r);}catch(e){}return{clients:[],articles:[],historique:[],caisse:{liquide:0,compte:0}};}
+function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(db));}
+let db=loadDB();
+
+// ================================================
+// UTILS
+// ================================================
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function fmt(n){return parseFloat(n||0).toFixed(2)+' €';}
+function fmtDate(ts){const d=new Date(ts);return d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function showPage(name){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+document.getElementById('page-'+name).classList.add('active');
+document.getElementById('nav-'+name).classList.add('active');
+const r={dashboard:renderDashboard,clients:renderClients,vente:renderVente,stock:renderStock,caisse:renderCaisse,historique:renderHistory,parametres:renderParametres};
+if(r[name])r[name]();
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ================================================
+// CARTES POPOTE
+// ================================================
+const CASE_VAL=0.25, CASES_N=40; // 40×0.25=10€
+
+function newCarte(clientId){return{id:uid(),clientId,cases:Array(CASES_N).fill(false),dateCreation:Date.now(),statut:'active',paiementOuverture:null};}
+function carteRestant(c){return c.cases.filter(x=>!x).length*CASE_VAL;}
+function carteConsomme(c){return c.cases.filter(x=>x).length*CASE_VAL;}
+function carteCasesLibres(c){return c.cases.filter(x=>!x).length;}
+
+/**
+* Coche `montantTotal` euros de cases sur la carte active du client.
+* Si la carte est épuisée, ouvre automatiquement une nouvelle à dette et continue.
+* Retourne un tableau des nouvelles cartes ouvertes à dette.
+*/
+function cocherCases(client, montantTotal){
+let remaining=Math.round(montantTotal/CASE_VAL);
+const nouvellesCartes=[];
+while(remaining>0){
+let carte=client.cartes.find(c=>c.statut==='active');
+if(!carte){
+// D'abord vérifier s'il y a une carte en attente
+const enAttente=client.cartes.filter(c=>c.statut==='en_attente').sort((a,b)=>a.dateCreation-b.dateCreation);
+if(enAttente.length>0){
+enAttente[0].statut='active';
+carte=enAttente[0];
+addHistorique({type:'achat_carte',label:`Carte en attente activée — ${client.nom}`,montant:0,paiement:null,clientId:client.id,note:'Ancienne carte soldée, passage à la suivante'});
+}else{
+// Ouvrir automatiquement nouvelle carte à dette
+carte=newCarte(client.id);
+carte.paiementOuverture='dette';
+client.cartes.push(carte);
+client.dette=Math.round(((client.dette||0)+10)*100)/100;
+nouvellesCartes.push(carte);
+addHistorique({type:'achat_carte',label:`Nouvelle carte auto à dette — ${client.nom}`,montant:0,paiement:'dette',clientId:client.id,note:'Ouverture automatique suite à débordement'});
+}
+}
+const libres=carteCasesLibres(carte);
+const aCocher=Math.min(remaining,libres);
+let fait=0;
+for(let i=0;i<carte.cases.length&&fait<aCocher;i++){if(!carte.cases[i]){carte.cases[i]=true;fait++;}}
+remaining-=aCocher;
+if(carteCasesLibres(carte)===0){
+carte.statut='soldee';
+// Activer la prochaine carte en attente si elle existe
+activerCarteEnAttente(client);
+}
+}
+return nouvellesCartes;
+}
+
+// ================================================
+// DASHBOARD
+// ================================================
+function renderDashboard(){
+renderAlerts();
+const total=db.caisse.liquide+db.caisse.compte;
+let dettes=0;db.clients.forEach(c=>dettes+=c.dette||0);
+document.getElementById('dashboard-stats').innerHTML=`
+<div class="stat-box"><div class="stat-label">Total caisse</div><div class="stat-value yellow">${fmt(total)}</div></div>
+<div class="stat-box"><div class="stat-label">Espèces</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
+<div class="stat-box"><div class="stat-label">Compte CB</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
+<div class="stat-box"><div class="stat-label">Dettes clients</div><div class="stat-value red">${fmt(dettes)}</div></div>`;
+document.getElementById('caisse-summary').innerHTML=`
+<div class="grid-2">
+<div class="stat-box"><div class="stat-label">💵 Espèces</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
+<div class="stat-box"><div class="stat-label">💳 Compte</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
+</div>
+<div class="stat-box mt-16"><div class="stat-label">Total</div><div class="stat-value yellow">${fmt(total)}</div></div>`;
+let vA=0,vV=0;db.articles.forEach(a=>{vA+=a.qte*a.prixAchat;vV+=a.qte*a.prixVente;});
+document.getElementById('stock-summary').innerHTML=`
+<div class="stat-box mb-16"><div class="stat-label">Valeur achat</div><div class="stat-value red">${fmt(vA)}</div></div>
+<div class="stat-box mb-16"><div class="stat-label">Valeur vente</div><div class="stat-value blue">${fmt(vV)}</div></div>
+<div class="stat-box"><div class="stat-label">Marge potentielle</div><div class="stat-value green">${fmt(vV-vA)}</div></div>`;
+renderArgentImmobilise();
+const recent=[...db.historique].reverse().slice(0,8);
+document.getElementById('recent-history').innerHTML=recent.length?recent.map(histHTML).join(''):'<div class="text-muted" style="padding:16px;text-align:center">Aucune transaction</div>';
+}
+
+function renderArgentImmobilise(){
+// Cartes popote : distinguer cartes payées (service dû) vs cartes à dette (argent à recevoir)
+let casesPayeesValeur=0; // cartes espèces/CB : déjà encaissé, service pas encore consommé
+let casesDetteValeur=0; // cartes à dette : argent PAS encore encaissé
+let detailCartes=[];
+
+db.clients.forEach(client=>{
+client.cartes.forEach(carte=>{
+if(carte.statut==='active'||carte.statut==='en_attente'){
+const restant=carteRestant(carte);
+if(restant>0){
+const estDette=carte.paiementOuverture==='dette';
+if(estDette) casesDetteValeur+=restant;
+else casesPayeesValeur+=restant;
+detailCartes.push({nom:client.nom,statut:carte.statut,restant,estDette});
+}
+}
+});
+});
+
+// Stock frigo
+let stockAchat=0,stockVente=0;
+db.articles.forEach(a=>{stockAchat+=a.qte*a.prixAchat;stockVente+=a.qte*a.prixVente;});
+const margeStock=stockVente-stockAchat;
+
+// Argent réellement à rentrer = dettes cartes + marge stock
+const totalARentrer=casesDetteValeur+margeStock;
+
+document.getElementById('argent-immobilise').innerHTML=`
+<div class="grid-4" style="margin-bottom:16px">
+<div class="stat-box">
+<div class="stat-label">🍲 Service dû (cartes payées)</div>
+<div class="stat-value yellow">${fmt(casesPayeesValeur)}</div>
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Déjà encaissé — reste à consommer</div>
+</div>
+<div class="stat-box" style="border-color:var(--red)">
+<div class="stat-label">🔖 Cases à dette (non payées)</div>
+<div class="stat-value red">${fmt(casesDetteValeur)}</div>
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Argent pas encore reçu</div>
+</div>
+<div class="stat-box">
+<div class="stat-label">🧊 Marge stock frigo</div>
+<div class="stat-value green">${fmt(margeStock)}</div>
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Achat : ${fmt(stockAchat)} · Vente : ${fmt(stockVente)}</div>
+</div>
+<div class="stat-box" style="border-color:var(--accent)">
+<div class="stat-label">💎 Bénéfice à rentrer</div>
+<div class="stat-value yellow">${fmt(totalARentrer)}</div>
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Dettes cartes + Marge stock</div>
+</div>
+</div>
+${detailCartes.length>0?`
+<div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px">Détail cartes en cours</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px">
+${detailCartes.map(d=>`
+<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border:1px solid ${d.statut==='en_attente'?'var(--blue)':d.estDette?'var(--red)':'var(--border)'}">
+<div>
+<div style="font-weight:600;font-size:13px">${d.nom}</div>
+<div style="font-size:11px;color:var(--text2)">${d.statut==='en_attente'?'⏳ En attente':'▶ Active'} · ${d.estDette?'<span style="color:var(--red)">🔖 À dette</span>':'<span style="color:var(--green)">✅ Payée</span>'}</div>
+</div>
+<div style="font-family:var(--font-mono);font-weight:700;color:${d.estDette?'var(--red)':'var(--accent)'}">${fmt(d.restant)}</div>
+</div>`).join('')}
+</div>`:'<div class="text-muted" style="font-size:13px;text-align:center;padding:12px">Aucune carte en cours</div>'}
+`;
+}
+function renderAlerts(){
+const low=db.articles.filter(a=>a.qte<=a.stockMin);
+document.getElementById('alerts-zone').innerHTML=low.map(a=>`<div class="alert alert-warning">⚠️ Stock faible : <strong>${a.nom}</strong> — ${a.qte} restant (min: ${a.stockMin})</div>`).join('');
+}
+
+// ================================================
+// CLIENTS
+// ================================================
+function renderClients(){
+const s=(document.getElementById('search-client')?.value||'').toLowerCase();
+const list=db.clients.filter(c=>c.nom.toLowerCase().includes(s));
+if(!list.length){document.getElementById('clients-list').innerHTML='<div class="card text-muted" style="text-align:center;padding:32px">Aucun client</div>';return;}
+document.getElementById('clients-list').innerHTML=list.map(client=>{
+const ca=client.cartes.find(c=>c.statut==='active');
+const enAttente=client.cartes.filter(c=>c.statut==='en_attente');
+const dette=client.dette||0;
+return`<div class="card" style="cursor:pointer" onclick="openClientDetail('${client.id}')">
+<div class="flex-between">
+<div><div style="font-weight:600;font-size:15px">${client.nom}</div><div style="color:var(--text2);font-size:12px">${client.tel||'Pas de téléphone'}</div></div>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+${dette>0?`<span class="badge badge-red">Dette: ${fmt(dette)}</span>`:''}
+${enAttente.length>0?`<span class="badge badge-blue">⏳ ${enAttente.length} en attente</span>`:''}
+${ca?`<span class="badge badge-yellow">${fmt(carteRestant(ca))} restant</span>`:'<span class="badge badge-gray">Pas de carte</span>'}
+</div>
+</div>
+${ca?`<div class="popote-grid" style="margin-top:10px">${ca.cases.map(ch=>`<div class="popote-case ${ch?'checked':''}"></div>`).join('')}</div>
+<div style="font-size:11px;color:var(--text2);margin-top:5px;font-family:var(--font-mono)">Consommé: ${fmt(carteConsomme(ca))} · Restant: ${fmt(carteRestant(ca))}</div>`:''}
+</div>`;
+}).join('');
+}
+
+let _paiClient=null;
+function selectPaiementClient(mode){
+_paiClient=mode;
+document.querySelectorAll('#nc-paiement-choix .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));
+const lb={espece:'💵 Espèces',carte:'💳 Carte bancaire',dette:'🔖 À dette'};
+document.getElementById('nc-paiement-info').innerHTML=`<div class="alert alert-blue" style="font-size:12px">Paiement : <strong>${lb[mode]}</strong></div>`;
+}
+
+function createClient(){
+const nom=document.getElementById('nc-nom').value.trim();
+if(!nom){toast('❌ Nom obligatoire');return;}
+if(!_paiClient){toast('❌ Choisis un mode de paiement pour la carte');return;}
+const client={id:uid(),nom,tel:document.getElementById('nc-tel').value.trim(),cartes:[],dette:0,dateCreation:Date.now()};
+const carte=newCarte(client.id);
+carte.paiementOuverture=_paiClient;
+client.cartes.push(carte);
+if(_paiClient==='espece')db.caisse.liquide+=10;
+else if(_paiClient==='carte')db.caisse.compte+=10;
+else client.dette=10;
+db.clients.push(client);
+addHistorique({type:'achat_carte',label:`Ouverture carte — ${client.nom}`,montant:_paiClient==='dette'?0:10,paiement:_paiClient,clientId:client.id,note:_paiClient==='dette'?'Carte à crédit':'Carte payée'});
+saveDB();closeModal('modal-new-client');
+document.getElementById('nc-nom').value='';document.getElementById('nc-tel').value='';
+_paiClient=null;
+document.querySelectorAll('#nc-paiement-choix .paiement-card').forEach(el=>el.classList.remove('selected'));
+document.getElementById('nc-paiement-info').innerHTML='';
+renderClients();toast(`✅ Client ${nom} créé`);
+}
+
+let _currentClientId=null;
+function openClientDetail(clientId){
+_currentClientId=clientId;
+const client=db.clients.find(c=>c.id===clientId);
+if(!client)return;
+document.getElementById('client-detail-title').textContent=`👤 ${client.nom}`;
+const dette=client.dette||0;
+const ca=client.cartes.find(c=>c.statut==='active');
+let html='';
+if(dette>0)html+=`<div class="alert alert-danger">Dette : <strong>${fmt(dette)}</strong><div style="margin-top:8px"><button class="btn btn-primary btn-sm" onclick="openPaiementDette('${clientId}')">💳 Régler</button></div></div>`;
+html+=`<div style="margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="ouvrirNouvelleCarteModal('${clientId}')">🍲 Ouvrir nouvelle carte Popote</button></div>`;
+if(ca){
+html+=`<div class="section-title">Carte active</div>
+<div class="popote-card-visual">
+<div class="flex-between"><span style="font-family:var(--font-title);font-weight:700;color:var(--accent)">🍲 POPOTE</span><span class="mono" style="font-size:12px;color:var(--text2)">10,00 €</span></div>
+<div class="popote-grid">${ca.cases.map((ch,i)=>`<div class="popote-case ${ch?'checked':''}" onclick="toggleCase('${clientId}','${ca.id}',${i})" title="Case ${i+1}"></div>`).join('')}</div>
+<div style="margin-top:10px;display:flex;justify-content:space-between;font-size:12px">
+<span>Consommé: <span class="text-yellow mono">${fmt(carteConsomme(ca))}</span></span>
+<span>Restant: <span class="text-green mono">${fmt(carteRestant(ca))}</span></span>
+</div>
+</div>`;
+}
+html+=`<div class="section-title">Historique cartes (${client.cartes.length})</div>`;
+const lb={espece:'💵 Espèces',carte:'💳 CB',dette:'🔖 À dette'};
+[...client.cartes].reverse().forEach((carte,i)=>{
+const idx=client.cartes.length-1-i;
+const badgeClass=carte.statut==='active'?'badge-yellow':carte.statut==='en_attente'?'badge-blue':'badge-gray';
+const badgeLabel=carte.statut==='active'?'Active ▶':carte.statut==='en_attente'?'⏳ En attente':'Soldée';
+html+=`<div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:8px;${carte.statut==='en_attente'?'border:1px solid var(--blue);':''}">
+<div class="flex-between">
+<span style="font-size:12px;color:var(--text2)">Carte #${idx+1} — ${new Date(carte.dateCreation).toLocaleDateString('fr-FR')}</span>
+<div style="display:flex;gap:6px">
+${carte.paiementOuverture?`<span class="badge badge-gray">${lb[carte.paiementOuverture]||''}</span>`:''}
+<span class="badge ${badgeClass}">${badgeLabel}</span>
+</div>
+</div>
+<div style="font-size:12px;margin-top:6px;color:var(--text2)">Consommé: ${fmt(carteConsomme(carte))} · Restant: ${fmt(carteRestant(carte))}</div>
+${carte.statut==='en_attente'?`<div style="font-size:11px;color:var(--blue);margin-top:4px">⏳ S'activera automatiquement quand la carte active sera épuisée</div>`:''}
+</div>`;
+});
+const histC=db.historique.filter(h=>h.clientId===clientId).reverse().slice(0,15);
+if(histC.length){html+=`<div class="section-title">Transactions</div>`;html+=histC.map(histHTML).join('');}
+document.getElementById('client-detail-body').innerHTML=html;
+openModal('modal-client-detail');
+}
+
+function toggleCase(clientId,carteId,idx){
+const client=db.clients.find(c=>c.id===clientId);
+const carte=client?.cartes.find(c=>c.id===carteId);
+if(!carte||carte.statut!=='active')return;
+carte.cases[idx]=!carte.cases[idx];
+if(carteCasesLibres(carte)===0){
+carte.statut='soldee';
+activerCarteEnAttente(client);
+}
+saveDB();openClientDetail(clientId);
+}
+
+// Passe automatiquement la carte "en_attente" la plus ancienne en "active" si aucune carte active
+function activerCarteEnAttente(client){
+const aActive=client.cartes.find(c=>c.statut==='active');
+if(aActive)return; // une carte active existe déjà
+// Trouver la plus ancienne carte en attente (ordre chronologique)
+const enAttente=client.cartes.filter(c=>c.statut==='en_attente').sort((a,b)=>a.dateCreation-b.dateCreation);
+if(enAttente.length>0){
+enAttente[0].statut='active';
+addHistorique({type:'achat_carte',label:`Carte en attente activée — ${client.nom}`,montant:0,paiement:null,clientId:client.id,note:'Ancienne carte soldée, passage à la suivante'});
+toast(`🍲 Nouvelle carte activée pour ${client.nom} !`);
+}
+}
+
+function openPaiementDette(clientId){
+_currentClientId=clientId;
+const client=db.clients.find(c=>c.id===clientId);
+document.getElementById('dette-info').innerHTML=`<div class="alert alert-warning">Client : <strong>${client.nom}</strong> — Dette : <strong>${fmt(client.dette)}</strong></div>`;
+document.getElementById('dette-montant').value=client.dette.toFixed(2);
+closeModal('modal-client-detail');openModal('modal-paiement-dette');
+}
+
+function validerPaiementDette(){
+const client=db.clients.find(c=>c.id===_currentClientId);if(!client)return;
+const montant=parseFloat(document.getElementById('dette-montant').value);
+if(!montant||montant<=0){toast('❌ Montant invalide');return;}
+if(montant>client.dette+0.01){toast('❌ Supérieur à la dette');return;}
+const paiement=document.getElementById('dette-paiement').value;
+client.dette=Math.round((client.dette-montant)*100)/100;
+if(paiement==='espece')db.caisse.liquide+=montant;else db.caisse.compte+=montant;
+addHistorique({type:'paiement_dette',label:`Paiement dette — ${client.nom}`,montant,paiement,clientId:client.id,note:`Reste: ${fmt(client.dette)}`});
+saveDB();closeModal('modal-paiement-dette');renderClients();toast(`✅ ${fmt(montant)} encaissé`);
+}
+
+let _paiNouvelleCarteMode=null,_paiNouvelleCarteClientId=null;
+function ouvrirNouvelleCarteModal(clientId){
+_paiNouvelleCarteClientId=clientId;_paiNouvelleCarteMode=null;
+const client=db.clients.find(c=>c.id===clientId);
+const enAttente=client.cartes.filter(c=>c.statut==='en_attente');
+const warningHTML=enAttente.length>0
+?`<div class="alert alert-warning" style="margin-bottom:10px">⚠️ Ce client a déjà <strong>${enAttente.length} carte(s) en attente</strong>.<br>La nouvelle s'ajoutera à la file d'attente.</div>`
+:'';
+document.getElementById('nouvelle-carte-info').innerHTML=`
+${warningHTML}
+<div class="alert alert-blue" style="margin-bottom:14px">Client : <strong>${client.nom}</strong><br>Ouverture nouvelle carte Popote (10 €)</div>`;
+document.querySelectorAll('#nouvcarte-choix .paiement-card').forEach(el=>el.classList.remove('selected'));
+closeModal('modal-client-detail');openModal('modal-nouvelle-carte');
+}
+function selectNouvelleCartePaiement(mode){
+_paiNouvelleCarteMode=mode;
+document.querySelectorAll('#nouvcarte-choix .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));
+}
+function validerNouvelleCarte(){
+if(!_paiNouvelleCarteMode){toast('❌ Choisis un mode de paiement');return;}
+const client=db.clients.find(c=>c.id===_paiNouvelleCarteClientId);if(!client)return;
+// On ne touche PAS à la carte active existante — elle reste active jusqu'à épuisement
+// La nouvelle carte est mise "en_attente" et deviendra active automatiquement quand l'ancienne sera soldée
+const carte=newCarte(client.id);
+carte.paiementOuverture=_paiNouvelleCarteMode;
+const caActive=client.cartes.find(c=>c.statut==='active');
+// Si pas de carte active du tout, la nouvelle est directement active
+carte.statut = caActive ? 'en_attente' : 'active';
+client.cartes.push(carte);
+if(_paiNouvelleCarteMode==='espece')db.caisse.liquide+=10;
+else if(_paiNouvelleCarteMode==='carte')db.caisse.compte+=10;
+else client.dette=Math.round(((client.dette||0)+10)*100)/100;
+const statLabel=caActive?'En attente (l\'ancienne carte est encore active)':'Active';
+addHistorique({type:'achat_carte',label:`Nouvelle carte — ${client.nom}`,montant:_paiNouvelleCarteMode==='dette'?0:10,paiement:_paiNouvelleCarteMode,clientId:client.id,note:statLabel});
+saveDB();closeModal('modal-nouvelle-carte');renderClients();
+toast(caActive?'✅ Carte en attente — l\'ancienne carte reste active':'✅ Nouvelle carte Popote ouverte');
+}
+
+// ================================================
+// VENTE — BOUTONS TACTILES
+// ================================================
+let venteArticles={}; // { articleId: { nom, prixVente, prixAchat, qte } }
+let _ventePaiement=null;
+
+function renderVente(){
+const sel=document.getElementById('vente-client');
+const curVal=sel.value;
+sel.innerHTML='<option value="">-- Choisir un client --</option>';
+db.clients.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.nom;sel.appendChild(o);});
+if(curVal)sel.value=curVal;
+renderArticlesGrid();
+renderTicket();
+venteSelectClient();
+}
+
+function renderArticlesGrid(){
+const grid=document.getElementById('articles-grid');
+if(!db.articles.length){
+grid.innerHTML='<div class="text-muted" style="padding:24px;text-align:center;grid-column:1/-1">Aucun article.<br>Ajoute des articles dans Stock.</div>';return;
+}
+grid.innerHTML=db.articles.map(a=>{
+const qteT=venteArticles[a.id]?.qte||0;
+const zero=a.qte<=0;
+return`<div class="article-btn ${zero?'zero-stock':''} ${qteT>0?'has-qty':''}" onclick="${zero?'':` venteAddArticle('${a.id}')`}">
+${qteT>0?`<div class="article-btn-qty-badge">${qteT}</div>`:''}
+<div class="article-btn-nom">${a.nom}</div>
+<div class="article-btn-prix">${fmt(a.prixVente)}</div>
+<div class="article-btn-stock">${zero?'❌ Rupture':`Stock: ${a.qte}${a.unite?' '+a.unite:''}`}</div>
+</div>`;
+}).join('');
+}
+
+function venteAddArticle(articleId){
+const art=db.articles.find(a=>a.id===articleId);
+if(!art||art.qte<=0)return;
+const qteEnTicket=venteArticles[articleId]?.qte||0;
+if(qteEnTicket>=art.qte){toast(`❌ Stock max (${art.qte})`);return;}
+if(venteArticles[articleId])venteArticles[articleId].qte++;
+else venteArticles[articleId]={nom:art.nom,prixVente:art.prixVente,prixAchat:art.prixAchat,qte:1};
+renderArticlesGrid();renderTicket();
+}
+
+function venteChangeQte(articleId,delta){
+if(!venteArticles[articleId])return;
+venteArticles[articleId].qte+=delta;
+if(venteArticles[articleId].qte<=0)delete venteArticles[articleId];
+renderArticlesGrid();renderTicket();
+}
+
+function selectVentePaiement(mode){
+_ventePaiement=mode;
+document.querySelectorAll('.ticket-paiement-btns .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));
+}
+
+function venteSelectClient(){
+const clientId=document.getElementById('vente-client').value;
+const badgeEl=document.getElementById('vente-client-badge');
+const infoEl=document.getElementById('vente-carte-info');
+if(!clientId){badgeEl.innerHTML='';infoEl.innerHTML='';renderTicket();return;}
+const client=db.clients.find(c=>c.id===clientId);
+const dette=client.dette||0;
+const ca=client.cartes.find(c=>c.statut==='active');
+badgeEl.innerHTML=dette>0?`<span class="badge badge-red">Dette: ${fmt(dette)}</span>`:'';
+if(ca){
+infoEl.innerHTML=`<div class="popote-grid">${ca.cases.map(ch=>`<div class="popote-case ${ch?'checked':''}"></div>`).join('')}</div>
+<div style="font-size:11px;color:var(--text2);margin-top:4px;font-family:var(--font-mono)">Carte active · Restant: <strong class="text-yellow">${fmt(carteRestant(ca))}</strong></div>`;
+}else{
+infoEl.innerHTML=`<div class="alert alert-warning" style="margin-top:6px;font-size:12px;padding:8px 12px">Pas de carte active pour ce client</div>`;
+}
+renderTicket();
+}
+
+function renderTicket(){
+const lines=Object.entries(venteArticles);
+const linesEl=document.getElementById('ticket-lines');
+const totalEl=document.getElementById('ticket-total-zone');
+const paiEl=document.getElementById('ticket-paiement-zone');
+const valEl=document.getElementById('ticket-valider-zone');
+
+if(!lines.length){
+linesEl.innerHTML='<div class="ticket-empty">Appuie sur un article<br>pour l\'ajouter au ticket 👆</div>';
+totalEl.innerHTML='';paiEl.innerHTML='';valEl.innerHTML='';return;
+}
+
+const total=lines.reduce((s,[,v])=>s+v.qte*v.prixVente,0);
+
+linesEl.innerHTML=lines.map(([id,v])=>`
+<div class="ticket-line">
+<div class="ticket-line-left"><div class="ticket-line-nom">${v.nom}</div></div>
+<div class="ticket-line-qty">
+<button class="qty-btn" onclick="venteChangeQte('${id}',-1)">−</button>
+<span class="mono" style="min-width:22px;text-align:center;font-weight:700">${v.qte}</span>
+<button class="qty-btn" onclick="venteChangeQte('${id}',1)">+</button>
+</div>
+<div class="ticket-line-prix">${fmt(v.qte*v.prixVente)}</div>
+</div>`).join('');
+
+totalEl.innerHTML=`<div class="ticket-total"><div class="ticket-total-label">Total à payer</div><div class="ticket-total-value">${fmt(total)}</div></div>`;
+
+// Info carte
+const clientId=document.getElementById('vente-client').value;
+const client=clientId?db.clients.find(c=>c.id===clientId):null;
+const ca=client?client.cartes.find(c=>c.statut==='active'):null;
+const casesN=Math.round(total/CASE_VAL);
+let infoCarteHTML='';
+if(client&&ca){
+const libres=carteCasesLibres(ca);
+if(casesN<=libres){
+infoCarteHTML=`<div class="alert alert-success" style="font-size:12px;margin-bottom:10px;padding:8px 12px">✅ Carte OK — ${casesN} cases (${fmt(total)})</div>`;
+}else{
+const deborde=casesN-libres;
+infoCarteHTML=`<div class="alert alert-warning" style="font-size:12px;margin-bottom:10px;padding:8px 12px">⚠️ ${libres} cases dispo + ${deborde} cases sur nouvelle carte à dette</div>`;
+}
+}
+
+paiEl.innerHTML=`${infoCarteHTML}
+<div class="form-label" style="margin-bottom:8px">Mode de paiement</div>
+<div class="ticket-paiement-btns">
+<div class="paiement-card" onclick="selectVentePaiement('carte_popote')" data-mode="carte_popote">
+<div class="pc-icon">🍲</div><div class="pc-label">Carte Popote</div>
+</div>
+<div class="paiement-card" onclick="selectVentePaiement('espece')" data-mode="espece">
+<div class="pc-icon">💵</div><div class="pc-label">Espèces</div>
+</div>
+<div class="paiement-card" onclick="selectVentePaiement('carte_bancaire')" data-mode="carte_bancaire">
+<div class="pc-icon">💳</div><div class="pc-label">Carte CB</div>
+</div>
+</div>`;
+
+// Restaurer la sélection
+if(_ventePaiement){
+const el=document.querySelector(`.ticket-paiement-btns [data-mode="${_ventePaiement}"]`);
+if(el)el.classList.add('selected');
+}
+
+valEl.innerHTML=`<button class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:14px;margin-top:4px" onclick="venteValider()">✓ Valider la vente</button>`;
+}
+
+function venteValider(){
+const clientId=document.getElementById('vente-client').value;
+const lines=Object.entries(venteArticles);
+if(!clientId){toast('❌ Choisis un client');return;}
+if(!lines.length){toast('❌ Ajoute des articles');return;}
+if(!_ventePaiement){toast('❌ Choisis un mode de paiement');return;}
+
+const client=db.clients.find(c=>c.id===clientId);
+const total=Math.round(lines.reduce((s,[,v])=>s+v.qte*v.prixVente,0)*100)/100;
+const articlesLabel=lines.map(([,v])=>`${v.qte}× ${v.nom}`).join(', ');
+
+if(_ventePaiement==='carte_popote'){
+const ca=client.cartes.find(c=>c.statut==='active');
+if(!ca){toast('❌ Ce client n\'a pas de carte active');return;}
+const nouvellesCartes=cocherCases(client,total);
+addHistorique({type:'vente',label:`Vente carte — ${client.nom}`,montant:total,paiement:'carte_popote',clientId,articles:articlesLabel,
+note:nouvellesCartes.length?`Débord: nouvelle carte à dette (${fmt(client.dette)} de dette)`:''});
+if(nouvellesCartes.length)toast(`✅ Vente OK — nouvelle carte ouverte à dette (${fmt(client.dette)})`);
+else toast(`✅ ${fmt(total)} sur carte Popote`);
+}else if(_ventePaiement==='espece'){
+db.caisse.liquide+=total;
+addHistorique({type:'vente',label:`Vente espèces — ${client.nom}`,montant:total,paiement:'espece',clientId,articles:articlesLabel});
+toast(`✅ ${fmt(total)} en espèces`);
+}else{
+db.caisse.compte+=total;
+addHistorique({type:'vente',label:`Vente CB — ${client.nom}`,montant:total,paiement:'carte',clientId,articles:articlesLabel});
+toast(`✅ ${fmt(total)} par CB`);
+}
+
+// Décrémenter stock
+lines.forEach(([id,v])=>{const art=db.articles.find(a=>a.id===id);if(art)art.qte-=v.qte;});
+saveDB();venteReset();
+}
+
+function venteReset(){
+venteArticles={};_ventePaiement=null;
+document.getElementById('vente-client').value='';
+document.getElementById('vente-client-badge').innerHTML='';
+document.getElementById('vente-carte-info').innerHTML='';
+renderArticlesGrid();renderTicket();
+}
+
+// ================================================
+// STOCK
+// ================================================
+function renderStock(){
+const s=(document.getElementById('search-stock')?.value||'').toLowerCase();
+const f=db.articles.filter(a=>a.nom.toLowerCase().includes(s));
+document.getElementById('stock-alerts').innerHTML=db.articles.filter(a=>a.qte<=a.stockMin)
+.map(a=>`<div class="alert alert-warning">⚠️ <strong>${a.nom}</strong> — ${a.qte} restant (min: ${a.stockMin})</div>`).join('');
+const tbody=document.getElementById('stock-tbody');
+if(!f.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:24px">Aucun article</td></tr>';return;}
+tbody.innerHTML=f.map(a=>{
+const m=a.prixAchat>0?((a.prixVente-a.prixAchat)/a.prixAchat*100).toFixed(0):'—';
+const low=a.qte<=a.stockMin;
+return`<tr>
+<td><strong>${a.nom}</strong>${a.unite?`<span style="color:var(--text2);font-size:11px"> (${a.unite})</span>`:''}</td>
+<td><span class="${low?'text-red':'text-green'} mono fw-700">${a.qte}</span>${low?'<span class="badge badge-red" style="margin-left:6px">⚠️</span>':''}</td>
+<td class="mono text-muted">${a.stockMin}</td>
+<td class="mono text-red">${fmt(a.prixAchat)}</td>
+<td class="mono text-yellow">${fmt(a.prixVente)}</td>
+<td class="mono text-green">+${m}%</td>
+<td><button class="btn btn-secondary btn-sm" onclick="editArticle('${a.id}')">✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteArticle('${a.id}')">🗑️</button></td>
+</tr>`;
+}).join('');
+}
+function createArticle(){
+const nom=document.getElementById('na-nom').value.trim();
+const prixAchat=parseFloat(document.getElementById('na-achat').value);
+const prixVente=parseFloat(document.getElementById('na-vente').value);
+if(!nom){toast('❌ Nom obligatoire');return;}
+if(isNaN(prixAchat)||isNaN(prixVente)){toast('❌ Prix invalides');return;}
+db.articles.push({id:uid(),nom,prixAchat,prixVente,qte:parseInt(document.getElementById('na-qte').value)||0,stockMin:parseInt(document.getElementById('na-min').value)||2,unite:document.getElementById('na-unite').value.trim()});
+saveDB();closeModal('modal-new-article');
+['na-nom','na-achat','na-vente','na-qte','na-min','na-unite'].forEach(id=>document.getElementById(id).value='');
+renderStock();toast(`✅ Article créé`);
+}
+function editArticle(id){
+const a=db.articles.find(x=>x.id===id);if(!a)return;
+document.getElementById('ea-id').value=id;
+document.getElementById('ea-nom').value=a.nom;
+document.getElementById('ea-achat').value=a.prixAchat;
+document.getElementById('ea-vente').value=a.prixVente;
+document.getElementById('ea-qte').value=a.qte;
+document.getElementById('ea-min').value=a.stockMin;
+document.getElementById('ea-unite').value=a.unite||'';
+openModal('modal-edit-article');
+}
+function saveArticle(){
+const id=document.getElementById('ea-id').value;
+const a=db.articles.find(x=>x.id===id);if(!a)return;
+a.nom=document.getElementById('ea-nom').value.trim();
+a.prixAchat=parseFloat(document.getElementById('ea-achat').value);
+a.prixVente=parseFloat(document.getElementById('ea-vente').value);
+a.qte=parseInt(document.getElementById('ea-qte').value)||0;
+a.stockMin=parseInt(document.getElementById('ea-min').value)||0;
+a.unite=document.getElementById('ea-unite').value.trim();
+saveDB();closeModal('modal-edit-article');renderStock();
+if(document.getElementById('page-vente').classList.contains('active'))renderArticlesGrid();
+toast('✅ Article mis à jour');
+}
+function deleteArticle(id){
+if(!confirm('Supprimer ?'))return;
+db.articles=db.articles.filter(a=>a.id!==id);
+saveDB();renderStock();toast('✅ Supprimé');
+}
+
+// ================================================
+// COURSES
+// ================================================
+let coursesLines=[];
+function openCoursesModal(){
+coursesLines=[];renderCoursesLines();
+document.getElementById('courses-montant').value='';
+document.getElementById('courses-note').value='';
+openModal('modal-courses');
+}
+function coursesAddLine(){coursesLines.push({articleId:'',qte:0});renderCoursesLines();}
+function renderCoursesLines(){
+const el=document.getElementById('courses-articles-list');
+if(!coursesLines.length){el.innerHTML='<div class="text-muted" style="font-size:12px;margin-bottom:10px">Aucun article</div>';return;}
+el.innerHTML=coursesLines.map((line,i)=>`
+<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+<select class="form-select" style="flex:2" onchange="coursesLines[${i}].articleId=this.value">
+<option value="">-- Article --</option>
+${db.articles.map(a=>`<option value="${a.id}" ${line.articleId===a.id?'selected':''}>${a.nom}</option>`).join('')}
+</select>
+<input class="form-input" type="number" style="flex:1;min-width:70px" placeholder="Qté" min="0"
+value="${line.qte||''}" onchange="coursesLines[${i}].qte=parseInt(this.value)||0">
+<button class="btn btn-danger btn-sm" onclick="coursesLines.splice(${i},1);renderCoursesLines()">✕</button>
+</div>`).join('');
+}
+function validerCourses(){
+const montant=parseFloat(document.getElementById('courses-montant').value);
+const paiement=document.getElementById('courses-paiement').value;
+const note=document.getElementById('courses-note').value.trim();
+if(isNaN(montant)||montant<=0){toast('❌ Montant invalide');return;}
+if(paiement==='espece'&&db.caisse.liquide<montant){toast('❌ Espèces insuffisantes');return;}
+if(paiement==='carte'&&db.caisse.compte<montant){toast('❌ Compte insuffisant');return;}
+if(paiement==='espece')db.caisse.liquide-=montant;else db.caisse.compte-=montant;
+const an=[];
+coursesLines.forEach(l=>{if(!l.articleId||!l.qte)return;const art=db.articles.find(a=>a.id===l.articleId);if(art){art.qte+=l.qte;an.push(`+${l.qte} ${art.nom}`);}});
+addHistorique({type:'courses',label:`Courses — ${note||'Approvisionnement'}`,montant:-montant,paiement,note:an.join(', ')||'Pas de stock mis à jour'});
+saveDB();closeModal('modal-courses');coursesLines=[];renderStock();
+toast(`✅ Courses de ${fmt(montant)} enregistrées`);
+}
+
+// ================================================
+// CAISSE
+// ================================================
+function renderCaisse(){
+const total=db.caisse.liquide+db.caisse.compte;
+document.getElementById('caisse-stats').innerHTML=`
+<div class="stat-box"><div class="stat-label">Total</div><div class="stat-value yellow">${fmt(total)}</div></div>
+<div class="stat-box"><div class="stat-label">Espèces</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
+<div class="stat-box"><div class="stat-label">Compte CB</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>`;
+const mouvL=db.historique.filter(h=>h.paiement==='espece').reverse().slice(0,10);
+document.getElementById('caisse-liquide-detail').innerHTML=`
+<div class="stat-box mb-16"><div class="stat-label">Solde</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
+${mouvL.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><div><div>${h.label}</div><div style="color:var(--text2);font-size:11px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div></div><div class="mono ${h.montant>=0?'text-green':'text-red'}">${h.montant>=0?'+':''}${fmt(Math.abs(h.montant))}</div></div>`).join('')}
+${!mouvL.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
+const mouvC=db.historique.filter(h=>h.paiement==='carte'||h.paiement==='carte_bancaire').reverse().slice(0,10);
+document.getElementById('caisse-compte-detail').innerHTML=`
+<div class="stat-box mb-16"><div class="stat-label">Solde</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
+${mouvC.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><div><div>${h.label}</div><div style="color:var(--text2);font-size:11px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div></div><div class="mono ${h.montant>=0?'text-green':'text-red'}">${h.montant>=0?'+':''}${fmt(Math.abs(h.montant))}</div></div>`).join('')}
+${!mouvC.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
+}
+function rentreeCaisse(){
+const montant=parseFloat(document.getElementById('rentree-montant').value);
+const motif=document.getElementById('rentree-motif').value.trim();
+const dest=document.getElementById('rentree-source').value;
+if(!montant||montant<=0){toast('❌ Montant invalide');return;}
+if(!motif){toast('❌ Précise le motif');return;}
+if(dest==='espece')db.caisse.liquide+=montant;else db.caisse.compte+=montant;
+addHistorique({type:'rentree',label:`Rentrée — ${motif}`,montant:montant,paiement:dest,note:motif});
+saveDB();renderCaisse();
+document.getElementById('rentree-montant').value='';document.getElementById('rentree-motif').value='';
+toast(`✅ Rentrée de ${fmt(montant)} enregistrée`);
+}
+function sortieCaisse(){
+const montant=parseFloat(document.getElementById('sortie-montant').value);
+const motif=document.getElementById('sortie-motif').value.trim();
+const source=document.getElementById('sortie-source').value;
+if(!montant||montant<=0){toast('❌ Montant invalide');return;}
+if(!motif){toast('❌ Précise le motif');return;}
+if(source==='espece'&&db.caisse.liquide<montant){toast('❌ Fonds insuffisants');return;}
+if(source==='carte'&&db.caisse.compte<montant){toast('❌ Compte insuffisant');return;}
+if(source==='espece')db.caisse.liquide-=montant;else db.caisse.compte-=montant;
+addHistorique({type:'sortie',label:`Sortie — ${motif}`,montant:-montant,paiement:source,note:motif});
+saveDB();renderCaisse();
+document.getElementById('sortie-montant').value='';document.getElementById('sortie-motif').value='';
+toast(`✅ Sortie de ${fmt(montant)} enregistrée`);
+}
+
+// ================================================
+// HISTORIQUE
+// ================================================
+function addHistorique(data){db.historique.push({id:uid(),ts:Date.now(),...data});}
+
+const TYPE_CFG={
+vente:{icon:'🛒',color:'var(--green)'},
+achat_carte:{icon:'🍲',color:'var(--accent)'},
+paiement_dette:{icon:'💳',color:'var(--blue)'},
+courses:{icon:'🛍️',color:'var(--red)'},
+sortie:{icon:'📤',color:'var(--red)'},
+rentree:{icon:'📥',color:'var(--green)'},
+};
+const PAI_LBL={espece:'💵 Espèces',carte:'💳 CB',carte_bancaire:'💳 CB',carte_popote:'🍲 Carte Popote',dette:'🔖 À dette'};
+
+function histHTML(h){
+const c=TYPE_CFG[h.type]||{icon:'📋',color:'var(--text2)'};
+const pos=h.montant>=0;
+return`<div class="history-item">
+<div class="history-icon" style="background:${c.color}22;color:${c.color}">${c.icon}</div>
+<div class="history-body">
+<div class="history-title">${h.label}</div>
+<div class="history-detail">${fmtDate(h.ts)}${h.paiement?` · ${PAI_LBL[h.paiement]||h.paiement}`:''}${h.articles?` · ${h.articles}`:''}${h.note?` · ${h.note}`:''}</div>
+</div>
+<div class="history-amount ${pos?'text-green':'text-red'}">${pos?'+':''}${fmt(Math.abs(h.montant))}</div>
+</div>`;
+}
+function renderHistory(){
+const s=(document.getElementById('search-history')?.value||'').toLowerCase();
+const f=document.getElementById('filter-history')?.value||'';
+let list=[...db.historique].reverse();
+if(s)list=list.filter(h=>h.label.toLowerCase().includes(s)||(h.note||'').toLowerCase().includes(s));
+if(f)list=list.filter(h=>h.type===f);
+document.getElementById('history-list').innerHTML=list.length?list.map(histHTML).join(''):'<div class="text-muted" style="text-align:center;padding:32px">Aucune transaction</div>';
+}
+function exportCSV(){
+const rows=[['Date','Type','Label','Montant','Paiement','Articles','Note']];
+db.historique.forEach(h=>rows.push([fmtDate(h.ts),h.type,h.label,h.montant,h.paiement||'',h.articles||'',h.note||'']));
+const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+a.download=`popote_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+toast('✅ Export CSV téléchargé');
+}
+
+// ================================================
+// PARAMÈTRES
+// ================================================
+const PARAMS_KEY='popote_params_v1';
+const PARAMS_DEFAULT={
+nom:'Popote',soustitre:'Gestion',
+couleurAccent:'#f0b429',couleurCase:'#f0b429',
+theme:'sombre',taille:'moyen',tailleBtn:'moyen',
+casesN:40,caseVal:0.25,
+logo:null
+};
+
+function loadParams(){
+try{const r=localStorage.getItem(PARAMS_KEY);if(r)return{...PARAMS_DEFAULT,...JSON.parse(r)};}catch(e){}
+return{...PARAMS_DEFAULT};
+}
+let params=loadParams();
+
+function appliquerParams(){
+// Nom & sous-titre
+const logoEl=document.querySelector('.logo');
+if(logoEl){
+if(params.logo){
+logoEl.innerHTML=`<img src="${params.logo}" style="height:36px;width:36px;object-fit:cover;border-radius:8px;margin-right:6px;vertical-align:middle"> ${params.nom}<span>${params.soustitre}</span>`;
+}else{
+logoEl.innerHTML=`🍲 ${params.nom}<span>${params.soustitre}</span>`;
+}
+}
+// Couleur accent
+document.documentElement.style.setProperty('--accent', params.couleurAccent);
+// Couleur cases
+document.documentElement.style.setProperty('--case-color', params.couleurCase);
+// Thème
+if(params.theme==='clair'){
+document.documentElement.style.setProperty('--bg','#f0f0f5');
+document.documentElement.style.setProperty('--surface','#ffffff');
+document.documentElement.style.setProperty('--surface2','#e8e8f0');
+document.documentElement.style.setProperty('--surface3','#d8d8e8');
+document.documentElement.style.setProperty('--text','#111118');
+document.documentElement.style.setProperty('--text2','#555570');
+document.documentElement.style.setProperty('--border','#d0d0e0');
+}else{
+document.documentElement.style.setProperty('--bg','#0f0f13');
+document.documentElement.style.setProperty('--surface','#18181f');
+document.documentElement.style.setProperty('--surface2','#22222d');
+document.documentElement.style.setProperty('--surface3','#2a2a38');
+document.documentElement.style.setProperty('--text','#f0f0f5');
+document.documentElement.style.setProperty('--text2','#9999b0');
+document.documentElement.style.setProperty('--border','#2e2e3e');
+}
+// Taille texte
+const tailleMap={petit:'12px',moyen:'14px',grand:'17px'};
+document.body.style.fontSize=tailleMap[params.taille]||'14px';
+// Taille boutons articles
+const btnMap={petit:'100px',moyen:'140px',grand:'180px'};
+document.documentElement.style.setProperty('--article-btn-min', btnMap[params.tailleBtn]||'140px');
+// Cases popote globals
+CASE_VAL_CUSTOM=params.caseVal||0.25;
+CASES_N_CUSTOM=params.casesN||40;
+// Mettre à jour la CSS des cases cochées
+let styleEl=document.getElementById('dynamic-style');
+if(!styleEl){styleEl=document.createElement('style');styleEl.id='dynamic-style';document.head.appendChild(styleEl);}
+styleEl.textContent=`
+.popote-case.checked{background:${params.couleurCase}!important;border-color:${params.couleurCase}!important;}
+.articles-grid{grid-template-columns:repeat(auto-fill,minmax(${btnMap[params.tailleBtn]||'140px'},1fr))!important;}
+.article-btn-qty-badge{background:${params.couleurAccent}!important;}
+.nav-btn.active{background:${params.couleurAccent}!important;}
+.btn-primary{background:${params.couleurAccent}!important;}
+.paiement-card.selected{border-color:${params.couleurAccent}!important;}
+.form-input:focus,.form-select:focus{border-color:${params.couleurAccent}!important;}
+.article-btn.has-qty{border-color:${params.couleurAccent}!important;}
+.stat-value.yellow{color:${params.couleurAccent}!important;}
+`;
+}
+
+function renderParametres(){
+document.getElementById('param-nom').value=params.nom||'';
+document.getElementById('param-soustitre').value=params.soustitre||'';
+document.getElementById('param-case-val').value=params.caseVal||0.25;
+document.getElementById('param-cases-n').value=params.casesN||40;
+updateCarteTotal();
+
+// Logo preview
+if(params.logo){
+document.getElementById('param-logo-preview').innerHTML=`<img src="${params.logo}" style="max-height:100px;max-width:100%;object-fit:contain;border-radius:8px">`;
+}
+
+// Couleurs accent
+document.querySelectorAll('#param-couleurs .color-choice').forEach(el=>{
+el.classList.toggle('selected',el.dataset.color===params.couleurAccent);
+});
+// Couleurs cases
+document.querySelectorAll('#param-case-couleurs .color-choice').forEach(el=>{
+el.classList.toggle('selected',el.dataset.color===params.couleurCase);
+});
+// Thème
+document.getElementById('theme-sombre').style.borderColor=params.theme==='sombre'?params.couleurAccent:'#444';
+document.getElementById('theme-clair').style.borderColor=params.theme==='clair'?params.couleurAccent:'#ddd';
+// Taille texte
+['petit','moyen','grand'].forEach(t=>{
+document.getElementById('taille-'+t)?.classList.toggle('taille-btn-active',params.taille===t);
+});
+// Taille boutons
+['petit','moyen','grand'].forEach(t=>{
+document.getElementById('btn-'+t)?.classList.toggle('taille-btn-active',params.tailleBtn===t);
+});
+// Aperçu carte
+renderCartePreview();
+}
+
+function renderCartePreview(){
+const n=parseInt(document.getElementById('param-cases-n')?.value)||40;
+const cols=Math.min(n,10);
+const preview=document.getElementById('param-carte-preview');
+if(!preview)return;
+preview.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+// Afficher quelques cases cochées pour l'aperçu
+const cochees=Math.floor(n*0.4);
+preview.innerHTML=Array(n).fill(0).map((_,i)=>`
+<div style="aspect-ratio:1;border-radius:3px;border:1.5px solid rgba(255,255,255,0.2);background:${i<cochees?params.couleurCase:'rgba(255,255,255,0.05)'};display:flex;align-items:center;justify-content:center;font-size:7px;color:#000">
+${i<cochees?'✓':''}
+</div>`).join('');
+}
+
+function updateCarteTotal(){
+const n=parseInt(document.getElementById('param-cases-n')?.value)||40;
+const v=parseFloat(document.getElementById('param-case-val')?.value)||0.25;
+const total=(n*v).toFixed(2);
+const el=document.getElementById('param-carte-total');
+if(el)el.textContent=`Valeur totale : ${total} €`;
+renderCartePreview();
+}
+
+// Attacher les events des inputs carte
+document.addEventListener('DOMContentLoaded',()=>{
+document.getElementById('param-cases-n')?.addEventListener('input',updateCarteTotal);
+document.getElementById('param-case-val')?.addEventListener('input',updateCarteTotal);
+});
+
+function selectCouleur(color){
+params.couleurAccent=color;
+document.querySelectorAll('#param-couleurs .color-choice').forEach(el=>el.classList.toggle('selected',el.dataset.color===color));
+appliquerParams();
+}
+function selectCaseCouleur(color){
+params.couleurCase=color;
+document.querySelectorAll('#param-case-couleurs .color-choice').forEach(el=>el.classList.toggle('selected',el.dataset.color===color));
+renderCartePreview();
+}
+function selectTheme(theme){
+params.theme=theme;
+appliquerParams();
+document.getElementById('theme-sombre').style.borderColor=theme==='sombre'?params.couleurAccent:'#444';
+document.getElementById('theme-clair').style.borderColor=theme==='clair'?params.couleurAccent:'#ddd';
+}
+function selectTaille(t){
+params.taille=t;
+appliquerParams();
+['petit','moyen','grand'].forEach(x=>document.getElementById('taille-'+x)?.classList.toggle('taille-btn-active',x===t));
+}
+function selectTailleBtn(t){
+params.tailleBtn=t;
+appliquerParams();
+['petit','moyen','grand'].forEach(x=>document.getElementById('btn-'+x)?.classList.toggle('taille-btn-active',x===t));
+}
+
+function chargerLogo(input){
+const file=input.files[0];if(!file)return;
+const reader=new FileReader();
+reader.onload=e=>{
+params.logo=e.target.result;
+document.getElementById('param-logo-preview').innerHTML=`<img src="${params.logo}" style="max-height:100px;max-width:100%;object-fit:contain;border-radius:8px">`;
+appliquerParams();
+};
+reader.readAsDataURL(file);
+}
+function supprimerLogo(){
+params.logo=null;
+document.getElementById('param-logo-preview').innerHTML='<span style="color:var(--text2);font-size:13px">Aucun logo</span>';
+appliquerParams();
+}
+
+function sauvegarderParametres(){
+params.nom=document.getElementById('param-nom').value.trim()||'Popote';
+params.soustitre=document.getElementById('param-soustitre').value.trim()||'Gestion';
+params.caseVal=parseFloat(document.getElementById('param-case-val').value)||0.25;
+params.casesN=parseInt(document.getElementById('param-cases-n').value)||40;
+localStorage.setItem(PARAMS_KEY,JSON.stringify(params));
+appliquerParams();
+toast('✅ Paramètres sauvegardés !');
+}
+
+function resetParametres(){
+if(!confirm('Réinitialiser tous les paramètres ?'))return;
+params={...PARAMS_DEFAULT};
+localStorage.removeItem(PARAMS_KEY);
+appliquerParams();
+renderParametres();
+toast('✅ Paramètres réinitialisés');
+}
+
+// Variables globales pour cases dynamiques (modifiables via paramètres)
+let CASE_VAL_CUSTOM=params.caseVal||0.25;
+let CASES_N_CUSTOM=params.casesN||40;
+
+// ================================================
+// INIT
+// ================================================
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
+
+// Attacher les events des inputs carte
+document.getElementById('param-cases-n')?.addEventListener('input',updateCarteTotal);
+document.getElementById('param-case-val')?.addEventListener('input',updateCarteTotal);
+
+appliquerParams();
+renderDashboard();
+
+// MISE EN CACHE HORS LIGNE
+if('serviceWorker' in navigator && window.location.protocol !== 'file:'){
+navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+</script>
+
+</body>
+</html>
