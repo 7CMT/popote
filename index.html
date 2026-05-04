@@ -206,6 +206,11 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(–surface2);}
 
 <div class="page active" id="page-dashboard">
 <div id="alerts-zone"></div>
+<!-- Bouton urgence réinitialisation apparence -->
+<div id="reset-apparence-banner" style="background:#3d1414;border:1px solid var(--red);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;display:none">
+<span style="color:var(--red);font-size:13px">⚠️ Problème d'affichage ?</span>
+<button class="btn btn-danger btn-sm" onclick="resetApparenceUrgence()">🎨 Restaurer le thème sombre</button>
+</div>
 <div class="grid-4 mb-16" id="dashboard-stats"></div>
 <div class="grid-2">
 <div class="card"><div class="card-title">💰 Caisse & Compte</div><div id="caisse-summary"></div></div>
@@ -3005,7 +3010,23 @@ params.theme='sombre';
 localStorage.setItem(PARAMS_KEY,JSON.stringify(params));
 }
 
+// Bouton urgence sur dashboard - afficher si thème posait problème
+function resetApparenceUrgence(){
+localStorage.removeItem(PARAMS_KEY);
+params={...PARAMS_DEFAULT};
 appliquerParams();
+document.getElementById('reset-apparence-banner').style.display='none';
+toast('✅ Thème sombre restauré !');
+}
+
+appliquerParams();
+
+// Afficher le bouton urgence si le thème n'est pas sombre
+if(params.theme!=='sombre'){
+const banner=document.getElementById('reset-apparence-banner');
+if(banner)banner.style.display='flex';
+}
+
 renderDashboard();
 </script>
 
