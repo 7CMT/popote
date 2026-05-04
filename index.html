@@ -9,8 +9,35 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Popote">
 <meta name="theme-color" content="#f0b429">
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="./manifest.json">
 <title>Popote Manager</title>
+<script>
+// Enregistrement Service Worker hors ligne
+if('serviceWorker' in navigator && location.protocol !== 'file:'){
+window.addEventListener('load', () => {
+// Le sw.js est dans le même dossier
+navigator.serviceWorker.register('./sw.js', {scope:'./'})
+.then(reg => {
+console.log('SW ok', reg.scope);
+// Forcer le cache de la page dès activation
+reg.addEventListener('updatefound', () => {
+reg.installing.addEventListener('statechange', e => {
+if(e.target.state==='activated'){
+caches.open('popote-v4').then(c=>c.addAll([
+location.pathname,
+location.pathname.replace('index.html','') + 'sw.js',
+location.pathname.replace('index.html','') + 'manifest.json',
+]).catch(()=>{}));
+}
+});
+});
+if(reg.active){
+caches.open('popote-v4').then(c=>c.add(location.href).catch(()=>{}));
+}
+}).catch(e=>console.log('SW erreur:',e));
+});
+}
+</script>
 <style>
 :root {
 --bg:#0f0f13;--surface:#18181f;--surface2:#22222d;--surface3:#2a2a38;
@@ -141,6 +168,13 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 .ticket-paiement-btns .paiement-card .pc-icon{font-size:20px;margin-bottom:4px;}
 .ticket-paiement-btns .paiement-card .pc-label{font-size:11px;}
 
+/* CATEGORIES */
+.cats-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.cat-btn{padding:8px 16px;border-radius:20px;border:2px solid var(–border);background:var(–surface2);color:var(–text2);cursor:pointer;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.cat-btn:hover{border-color:var(–accent);color:var(–text);}
+.cat-btn.active{background:var(–accent);border-color:var(–accent);color:#000;}
+.cat-btn.all{border-color:var(–accent);}
+
 /* PARAMETRES */
 .color-choice{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all 0.15s;flex-shrink:0;}
 .color-choice.selected{border-color:#fff;box-shadow:0 0 0 2px var(–accent);transform:scale(1.15);}
@@ -213,9 +247,11 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 </div>
 <div class="vente-layout">
 <div>
-<div style="font-family:var(--font-title);font-weight:700;font-size:14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+<div style="font-family:var(--font-title);font-weight:700;font-size:14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
 Appuie pour ajouter au ticket ↓
 </div>
+<!-- Barre de catégories -->
+<div class="cats-bar" id="vente-cats-bar"></div>
 <div class="articles-grid" id="articles-grid"></div>
 </div>
 <div>
@@ -237,6 +273,7 @@ Appuie pour ajouter au ticket ↓
 <div class="card-title" style="margin:0">📦 Stock</div>
 <div class="flex gap-8">
 <button class="btn btn-secondary" onclick="openCoursesModal()">🛍️ Courses</button>
+<button class="btn btn-secondary" onclick="openModal('modal-categories')">🏷️ Catégories</button>
 <button class="btn btn-primary" onclick="openModal('modal-new-article')">+ Article</button>
 </div>
 </div>
@@ -247,7 +284,7 @@ Appuie pour ajouter au ticket ↓
 </div>
 <div class="table-wrap">
 <table>
-<thead><tr><th>Article</th><th>Stock</th><th>Min.</th><th>Prix achat</th><th>Prix vente</th><th>Marge</th><th>Actions</th></tr></thead>
+<thead><tr><th>Article</th><th>Catégorie</th><th>Stock</th><th>Min.</th><th>Prix achat</th><th>Prix vente</th><th>Marge</th><th>Actions</th></tr></thead>
 <tbody id="stock-tbody"></tbody>
 </table>
 </div>
@@ -565,6 +602,11 @@ Appuie pour ajouter au ticket ↓
 <div class="form-group"><label class="form-label">Stock minimum</label><input class="form-input" type="number" id="na-min" placeholder="2" min="0"></div>
 </div>
 <div class="form-group"><label class="form-label">Unité (optionnel)</label><input class="form-input" id="na-unite" placeholder="pièce, kg, L..."></div>
+<div class="form-group"><label class="form-label">Catégorie</label>
+<select class="form-select" id="na-categorie">
+<option value="">-- Sans catégorie --</option>
+</select>
+</div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="closeModal('modal-new-article')">Annuler</button>
 <button class="btn btn-primary" onclick="createArticle()">Créer</button>
@@ -588,9 +630,31 @@ Appuie pour ajouter au ticket ↓
 <div class="form-group"><label class="form-label">Stock minimum</label><input class="form-input" type="number" id="ea-min" min="0"></div>
 </div>
 <div class="form-group"><label class="form-label">Unité</label><input class="form-input" id="ea-unite"></div>
+<div class="form-group"><label class="form-label">Catégorie</label>
+<select class="form-select" id="ea-categorie">
+<option value="">-- Sans catégorie --</option>
+</select>
+</div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="closeModal('modal-edit-article')">Annuler</button>
 <button class="btn btn-primary" onclick="saveArticle()">Enregistrer</button>
+</div>
+</div>
+</div>
+
+<!-- Catégories -->
+
+<div class="modal-overlay" id="modal-categories">
+<div class="modal">
+<div class="modal-title">🏷️ Gérer les catégories</div>
+<div class="form-group" style="display:flex;gap:8px">
+<input class="form-input" id="new-cat-nom" placeholder="Nom de la catégorie..." style="flex:1">
+<input class="form-input" id="new-cat-emoji" placeholder="🍕" style="width:70px;text-align:center">
+<button class="btn btn-primary" onclick="createCategorie()">+</button>
+</div>
+<div id="categories-list" style="margin-top:8px"></div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal('modal-categories')">Fermer</button>
 </div>
 </div>
 </div>
@@ -626,9 +690,10 @@ Appuie pour ajouter au ticket ↓
 // DB LOCALE
 // ================================================
 const DB_KEY='popote_db_v2';
-function loadDB(){try{const r=localStorage.getItem(DB_KEY);if(r)return JSON.parse(r);}catch(e){}return{clients:[],articles:[],historique:[],caisse:{liquide:0,compte:0}};}
+function loadDB(){try{const r=localStorage.getItem(DB_KEY);if(r)return JSON.parse(r);}catch(e){}return{clients:[],articles:[],historique:[],caisse:{liquide:0,compte:0},categories:[]};}
 function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(db));}
 let db=loadDB();
+if(!db.categories)db.categories=[];
 
 // ================================================
 // UTILS
@@ -645,7 +710,11 @@ document.getElementById('nav-'+name).classList.add('active');
 const r={dashboard:renderDashboard,clients:renderClients,vente:renderVente,stock:renderStock,caisse:renderCaisse,historique:renderHistory,parametres:renderParametres};
 if(r[name])r[name]();
 }
-function openModal(id){document.getElementById(id).classList.add('open');}
+function openModal(id){
+document.getElementById(id).classList.add('open');
+if(id==='modal-categories'){updateCategorieSelects();renderCategoriesModal();}
+if(id==='modal-new-article'){updateCategorieSelects();}
+}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 // ================================================
@@ -982,10 +1051,70 @@ toast(caActive?'✅ Carte en attente — l\'ancienne carte reste active':'✅ No
 }
 
 // ================================================
+// CATÉGORIES
+// ================================================
+function renderCategoriesModal(){
+const el=document.getElementById('categories-list');
+if(!db.categories.length){
+el.innerHTML='<div class="text-muted" style="text-align:center;padding:16px;font-size:13px">Aucune catégorie — ajoute-en une ci-dessus</div>';
+return;
+}
+el.innerHTML=db.categories.map(cat=>`
+<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)">
+<div style="font-size:15px;font-weight:600">${cat.emoji||'🏷️'} ${cat.nom}</div>
+<div style="display:flex;gap:6px;align-items:center">
+<span style="font-size:11px;color:var(--text2)">${db.articles.filter(a=>a.categorieId===cat.id).length} article(s)</span>
+<button class="btn btn-danger btn-sm" onclick="deleteCategorie('${cat.id}')">🗑️</button>
+</div>
+</div>`).join('');
+}
+
+function createCategorie(){
+const nom=document.getElementById('new-cat-nom').value.trim();
+if(!nom){toast('❌ Nom obligatoire');return;}
+const emoji=document.getElementById('new-cat-emoji').value.trim()||'🏷️';
+db.categories.push({id:uid(),nom,emoji});
+saveDB();
+document.getElementById('new-cat-nom').value='';
+document.getElementById('new-cat-emoji').value='';
+renderCategoriesModal();
+updateCategorieSelects();
+toast(`✅ Catégorie "${nom}" créée`);
+}
+
+function deleteCategorie(id){
+if(!confirm('Supprimer cette catégorie ? Les articles garderont leurs données mais perdront leur catégorie.'))return;
+db.categories=db.categories.filter(c=>c.id!==id);
+db.articles.forEach(a=>{if(a.categorieId===id)a.categorieId=null;});
+saveDB();
+renderCategoriesModal();
+updateCategorieSelects();
+if(_venteCatFiltre===id)_venteCatFiltre=null;
+renderArticlesGrid();
+toast('✅ Catégorie supprimée');
+}
+
+function updateCategorieSelects(){
+['na-categorie','ea-categorie'].forEach(selId=>{
+const sel=document.getElementById(selId);
+if(!sel)return;
+const cur=sel.value;
+sel.innerHTML='<option value="">-- Sans catégorie --</option>';
+db.categories.forEach(c=>{
+const o=document.createElement('option');
+o.value=c.id;o.textContent=`${c.emoji} ${c.nom}`;
+sel.appendChild(o);
+});
+if(cur)sel.value=cur;
+});
+}
+
+// ================================================
 // VENTE — BOUTONS TACTILES
 // ================================================
-let venteArticles={}; // { articleId: { nom, prixVente, prixAchat, qte } }
+let venteArticles={};
 let _ventePaiement=null;
+let _venteCatFiltre=null; // null = toutes les catégories
 
 function renderVente(){
 const sel=document.getElementById('vente-client');
@@ -993,9 +1122,34 @@ const curVal=sel.value;
 sel.innerHTML='<option value="">-- Choisir un client --</option>';
 db.clients.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.nom;sel.appendChild(o);});
 if(curVal)sel.value=curVal;
+updateCategorieSelects();
+renderVenteCatsBar();
 renderArticlesGrid();
 renderTicket();
 venteSelectClient();
+}
+
+function renderVenteCatsBar(){
+const bar=document.getElementById('vente-cats-bar');
+if(!bar)return;
+let html=`<div class="cat-btn all ${_venteCatFiltre===null?'active':''}" onclick="filtrerCat(null)">Tout</div>`;
+db.categories.forEach(cat=>{
+const nb=db.articles.filter(a=>a.categorieId===cat.id&&a.qte>0).length;
+if(nb===0)return;
+html+=`<div class="cat-btn ${_venteCatFiltre===cat.id?'active':''}" onclick="filtrerCat('${cat.id}')">${cat.emoji} ${cat.nom}</div>`;
+});
+// Catégorie "Sans catégorie" si des articles n'en ont pas
+const sansCat=db.articles.filter(a=>!a.categorieId&&a.qte>0).length;
+if(sansCat>0){
+html+=`<div class="cat-btn ${_venteCatFiltre==='__none'?'active':''}" onclick="filtrerCat('__none')">🏷️ Autres</div>`;
+}
+bar.innerHTML=html;
+}
+
+function filtrerCat(catId){
+_venteCatFiltre=catId;
+renderVenteCatsBar();
+renderArticlesGrid();
 }
 
 function renderArticlesGrid(){
@@ -1003,7 +1157,21 @@ const grid=document.getElementById('articles-grid');
 if(!db.articles.length){
 grid.innerHTML='<div class="text-muted" style="padding:24px;text-align:center;grid-column:1/-1">Aucun article.<br>Ajoute des articles dans Stock.</div>';return;
 }
-grid.innerHTML=db.articles.map(a=>{
+// Filtrer par catégorie
+let articles=db.articles;
+if(_venteCatFiltre===null){
+// tout afficher
+} else if(_venteCatFiltre==='__none'){
+articles=articles.filter(a=>!a.categorieId);
+} else {
+articles=articles.filter(a=>a.categorieId===_venteCatFiltre);
+}
+
+if(!articles.length){
+grid.innerHTML='<div class="text-muted" style="padding:24px;text-align:center;grid-column:1/-1">Aucun article dans cette catégorie.</div>';return;
+}
+
+grid.innerHTML=articles.map(a=>{
 const qteT=venteArticles[a.id]?.qte||0;
 const zero=a.qte<=0;
 return`<div class="article-btn ${zero?'zero-stock':''} ${qteT>0?'has-qty':''}" onclick="${zero?'':` venteAddArticle('${a.id}')`}">
@@ -1172,12 +1340,14 @@ const f=db.articles.filter(a=>a.nom.toLowerCase().includes(s));
 document.getElementById('stock-alerts').innerHTML=db.articles.filter(a=>a.qte<=a.stockMin)
 .map(a=>`<div class="alert alert-warning">⚠️ <strong>${a.nom}</strong> — ${a.qte} restant (min: ${a.stockMin})</div>`).join('');
 const tbody=document.getElementById('stock-tbody');
-if(!f.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:24px">Aucun article</td></tr>';return;}
+if(!f.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:24px">Aucun article</td></tr>';return;}
 tbody.innerHTML=f.map(a=>{
 const m=a.prixAchat>0?((a.prixVente-a.prixAchat)/a.prixAchat*100).toFixed(0):'—';
 const low=a.qte<=a.stockMin;
+const cat=db.categories.find(c=>c.id===a.categorieId);
 return`<tr>
 <td><strong>${a.nom}</strong>${a.unite?`<span style="color:var(--text2);font-size:11px"> (${a.unite})</span>`:''}</td>
+<td><span class="badge badge-gray">${cat?`${cat.emoji} ${cat.nom}`:'—'}</span></td>
 <td><span class="${low?'text-red':'text-green'} mono fw-700">${a.qte}</span>${low?'<span class="badge badge-red" style="margin-left:6px">⚠️</span>':''}</td>
 <td class="mono text-muted">${a.stockMin}</td>
 <td class="mono text-red">${fmt(a.prixAchat)}</td>
@@ -1193,13 +1363,15 @@ const prixAchat=parseFloat(document.getElementById('na-achat').value);
 const prixVente=parseFloat(document.getElementById('na-vente').value);
 if(!nom){toast('❌ Nom obligatoire');return;}
 if(isNaN(prixAchat)||isNaN(prixVente)){toast('❌ Prix invalides');return;}
-db.articles.push({id:uid(),nom,prixAchat,prixVente,qte:parseInt(document.getElementById('na-qte').value)||0,stockMin:parseInt(document.getElementById('na-min').value)||2,unite:document.getElementById('na-unite').value.trim()});
+db.articles.push({id:uid(),nom,prixAchat,prixVente,qte:parseInt(document.getElementById('na-qte').value)||0,stockMin:parseInt(document.getElementById('na-min').value)||2,unite:document.getElementById('na-unite').value.trim(),categorieId:document.getElementById('na-categorie').value||null});
 saveDB();closeModal('modal-new-article');
 ['na-nom','na-achat','na-vente','na-qte','na-min','na-unite'].forEach(id=>document.getElementById(id).value='');
+document.getElementById('na-categorie').value='';
 renderStock();toast(`✅ Article créé`);
 }
 function editArticle(id){
 const a=db.articles.find(x=>x.id===id);if(!a)return;
+updateCategorieSelects();
 document.getElementById('ea-id').value=id;
 document.getElementById('ea-nom').value=a.nom;
 document.getElementById('ea-achat').value=a.prixAchat;
@@ -1207,6 +1379,7 @@ document.getElementById('ea-vente').value=a.prixVente;
 document.getElementById('ea-qte').value=a.qte;
 document.getElementById('ea-min').value=a.stockMin;
 document.getElementById('ea-unite').value=a.unite||'';
+document.getElementById('ea-categorie').value=a.categorieId||'';
 openModal('modal-edit-article');
 }
 function saveArticle(){
@@ -1218,8 +1391,9 @@ a.prixVente=parseFloat(document.getElementById('ea-vente').value);
 a.qte=parseInt(document.getElementById('ea-qte').value)||0;
 a.stockMin=parseInt(document.getElementById('ea-min').value)||0;
 a.unite=document.getElementById('ea-unite').value.trim();
+a.categorieId=document.getElementById('ea-categorie').value||null;
 saveDB();closeModal('modal-edit-article');renderStock();
-if(document.getElementById('page-vente').classList.contains('active'))renderArticlesGrid();
+if(document.getElementById('page-vente').classList.contains('active')){renderVenteCatsBar();renderArticlesGrid();}
 toast('✅ Article mis à jour');
 }
 function deleteArticle(id){
@@ -1576,32 +1750,10 @@ document.getElementById('param-case-val')?.addEventListener('input',updateCarteT
 
 appliquerParams();
 renderDashboard();
-
-// MISE EN CACHE HORS LIGNE - chemin relatif pour GitHub Pages
-if('serviceWorker' in navigator && window.location.protocol !== 'file:'){
-// Utiliser un chemin relatif pour fonctionner sur GitHub Pages (/popote/)
-const swPath = new URL('sw.js', window.location.href).href;
-const scope = new URL('./', window.location.href).href;
-navigator.serviceWorker.register(swPath, {scope: scope})
-.then(reg => {
-// Forcer la mise en cache de la page dès l'installation
-reg.addEventListener('updatefound', () => {
-const sw = reg.installing;
-sw.addEventListener('statechange', () => {
-if(sw.state === 'activated'){
-caches.open('popote-v4').then(cache => cache.add(window.location.href));
-}
-});
-});
-// Si déjà actif, mettre en cache maintenant
-if(reg.active){
-caches.open('popote-v4').then(cache => cache.add(window.location.href));
-}
-})
-.catch(e => console.log('SW error:', e));
-}
-
 </script>
 
+</body>
+</html>
+</script>
 </body>
 </html>
