@@ -551,7 +551,8 @@ Appuie pour ajouter au ticket ↓
 
 <div style="display:flex;gap:12px;justify-content:flex-end">
 <button class="btn btn-secondary" onclick="changerPin()">🔑 Changer le code PIN</button>
-<button class="btn btn-secondary" onclick="resetParametres()">↺ Réinitialiser</button>
+<button class="btn btn-secondary" onclick="resetParamsSeuls()">🎨 Réinitialiser l'apparence</button>
+<button class="btn btn-secondary" onclick="resetParametres()">↺ Réinitialiser tout</button>
 <button class="btn btn-primary" onclick="sauvegarderParametres()">✓ Sauvegarder</button>
 </div>
 </div>
@@ -2965,6 +2966,15 @@ params.casesN=parseInt(document.getElementById('param-cases-n').value)||40;
 localStorage.setItem(PARAMS_KEY,JSON.stringify(params));
 appliquerParams();
 toast('✅ Paramètres sauvegardés !');
+}
+
+function resetParamsSeuls(){
+// Réinitialise UNIQUEMENT les paramètres d'apparence, sans toucher aux données
+localStorage.removeItem(PARAMS_KEY);
+params={...PARAMS_DEFAULT};
+appliquerParams();
+renderParametres();
+toast('✅ Apparence réinitialisée — thème sombre restauré !');
 }
 
 function resetParametres(){
