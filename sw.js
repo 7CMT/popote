@@ -1,14 +1,19 @@
 const CACHE = ‘popote-v4’;
 
 self.addEventListener(‘install’, e => {
+self.skipWaiting();
 e.waitUntil(
 caches.open(CACHE).then(cache => {
-return Promise.all([
-cache.add(new Request(self.location.origin + self.registration.scope.replace(self.location.origin,’’) + ‘index.html’, {cache: ‘reload’})),
+// Mettre en cache toutes les ressources de l’app
+return cache.addAll([
+‘./’,
+‘./index.html’,
+‘./sw.js’,
+‘./manifest.json’,
+‘./icon.png’
 ]).catch(() => {});
 })
 );
-self.skipWaiting();
 });
 
 self.addEventListener(‘activate’, e => {
@@ -24,22 +29,22 @@ self.addEventListener(‘fetch’, e => {
 if(e.request.method !== ‘GET’) return;
 e.respondWith(
 caches.open(CACHE).then(async cache => {
+// Stratégie : cache d’abord, réseau en arrière-plan
 const cached = await cache.match(e.request);
-if(cached) {
-// Mettre à jour en arrière-plan
-fetch(e.request).then(r => { if(r && r.status===200) cache.put(e.request, r.clone()); }).catch(()=>{});
-return cached;
+const fetchPromise = fetch(e.request).then(resp => {
+if(resp && resp.status === 200 && resp.type !== ‘opaque’){
+cache.put(e.request, resp.clone());
 }
-try {
-const resp = await fetch(e.request);
-if(resp && resp.status === 200) cache.put(e.request, resp.clone());
 return resp;
-} catch(err) {
-// Hors ligne : retourner n’importe quelle page en cache
-const keys = await cache.keys();
-if(keys.length) return cache.match(keys[0]);
-return new Response(‘Hors ligne’, {status:200});
-}
+}).catch(() => null);
+
+```
+return cached || fetchPromise || new Response('Hors ligne - Popote fonctionne sans connexion', {
+status: 200,
+headers: {'Content-Type': 'text/plain;charset=utf-8'}
+});
 })
+```
+
 );
 });
