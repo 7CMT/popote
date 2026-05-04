@@ -581,20 +581,42 @@ Appuie pour ajouter au ticket ↓
 <div class="modal-overlay" id="modal-new-article">
 <div class="modal">
 <div class="modal-title">📦 Nouvel article</div>
-<div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="na-nom" placeholder="Ex: Café, Yaourt..."></div>
+<div class="form-group">
+<label class="form-label">Type d'article</label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="na-type-choix">
+<div class="paiement-card selected" data-type="stock" onclick="selectTypeArticle('stock')" style="padding:10px 6px;text-align:center">
+<div style="font-size:18px;margin-bottom:3px">📦</div>
+<div style="font-size:11px;font-weight:600">Stock suivi</div>
+<div style="font-size:10px;color:var(--text2);margin-top:1px">Canettes, snacks...</div>
+</div>
+<div class="paiement-card" data-type="repas" onclick="selectTypeArticle('repas')" style="padding:10px 6px;text-align:center">
+<div style="font-size:18px;margin-bottom:3px">🥘</div>
+<div style="font-size:11px;font-weight:600">Repas</div>
+<div style="font-size:10px;color:var(--text2);margin-top:1px">+ boisson incluse</div>
+</div>
+</div>
+</div>
+<div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="na-nom" placeholder="Ex: Repas 4€, Repas midi..."></div>
 <div class="grid-2">
 <div class="form-group"><label class="form-label">Prix achat (€)</label><input class="form-input" type="number" id="na-achat" placeholder="0.00" step="0.01"></div>
 <div class="form-group"><label class="form-label">Prix vente (€)</label><input class="form-input" type="number" id="na-vente" placeholder="0.00" step="0.01"></div>
 </div>
+<div id="na-stock-fields">
 <div class="grid-2">
 <div class="form-group"><label class="form-label">Quantité initiale</label><input class="form-input" type="number" id="na-qte" placeholder="0" min="0"></div>
 <div class="form-group"><label class="form-label">Stock minimum</label><input class="form-input" type="number" id="na-min" placeholder="2" min="0"></div>
 </div>
 <div class="form-group"><label class="form-label">Unité (optionnel)</label><input class="form-input" id="na-unite" placeholder="pièce, kg, L..."></div>
+</div>
+<div id="na-repas-fields" style="display:none">
+<div class="form-group">
+<label class="form-label">Plafond boisson incluse (€)</label>
+<input class="form-input" type="number" id="na-plafond" value="0.75" step="0.25" min="0" placeholder="0.75">
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Au-delà, le supplément sera encaissé séparément</div>
+</div>
+</div>
 <div class="form-group"><label class="form-label">Catégorie</label>
-<select class="form-select" id="na-categorie">
-<option value="">-- Sans catégorie --</option>
-</select>
+<select class="form-select" id="na-categorie"><option value="">-- Sans catégorie --</option></select>
 </div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="closeModal('modal-new-article')">Annuler</button>
@@ -609,24 +631,89 @@ Appuie pour ajouter au ticket ↓
 <div class="modal">
 <div class="modal-title">✏️ Modifier l'article</div>
 <input type="hidden" id="ea-id">
+<div class="form-group">
+<label class="form-label">Type</label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="ea-type-choix">
+<div class="paiement-card selected" data-type="stock" onclick="selectTypeArticleEdit('stock')" style="padding:10px 6px;text-align:center">
+<div style="font-size:16px;margin-bottom:2px">📦</div>
+<div style="font-size:11px;font-weight:600">Stock</div>
+</div>
+<div class="paiement-card" data-type="repas" onclick="selectTypeArticleEdit('repas')" style="padding:10px 6px;text-align:center">
+<div style="font-size:16px;margin-bottom:2px">🥘</div>
+<div style="font-size:11px;font-weight:600">Repas</div>
+</div>
+</div>
+</div>
 <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="ea-nom"></div>
 <div class="grid-2">
 <div class="form-group"><label class="form-label">Prix achat (€)</label><input class="form-input" type="number" id="ea-achat" step="0.01"></div>
 <div class="form-group"><label class="form-label">Prix vente (€)</label><input class="form-input" type="number" id="ea-vente" step="0.01"></div>
 </div>
+<div id="ea-stock-fields">
 <div class="grid-2">
 <div class="form-group"><label class="form-label">Quantité en stock</label><input class="form-input" type="number" id="ea-qte" min="0"></div>
 <div class="form-group"><label class="form-label">Stock minimum</label><input class="form-input" type="number" id="ea-min" min="0"></div>
 </div>
 <div class="form-group"><label class="form-label">Unité</label><input class="form-input" id="ea-unite"></div>
+</div>
+<div id="ea-repas-fields" style="display:none">
+<div class="form-group">
+<label class="form-label">Plafond boisson incluse (€)</label>
+<input class="form-input" type="number" id="ea-plafond" value="0.75" step="0.25" min="0">
+</div>
+</div>
 <div class="form-group"><label class="form-label">Catégorie</label>
-<select class="form-select" id="ea-categorie">
-<option value="">-- Sans catégorie --</option>
-</select>
+<select class="form-select" id="ea-categorie"><option value="">-- Sans catégorie --</option></select>
 </div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="closeModal('modal-edit-article')">Annuler</button>
 <button class="btn btn-primary" onclick="saveArticle()">Enregistrer</button>
+</div>
+</div>
+</div>
+
+<!-- Sélection boisson pour repas -->
+
+<div class="modal-overlay" id="modal-choix-boisson">
+<div class="modal" style="max-width:540px">
+<div class="modal-title">🥤 Choisir l'article inclus</div>
+<div id="choix-boisson-repas-info" style="margin-bottom:10px"></div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Plafond inclus : <strong id="choix-boisson-plafond" style="color:var(--accent)"></strong> — supplément éventuel encaissé séparément</div>
+<!-- Filtre catégorie -->
+<div class="cats-bar" id="choix-boisson-cats" style="margin-bottom:10px"></div>
+<!-- Grille articles -->
+<div id="choix-boisson-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;max-height:260px;overflow-y:auto;margin-bottom:12px"></div>
+<div class="alert alert-blue" style="font-size:12px;margin-bottom:12px" id="choix-boisson-supplement"></div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="annulerChoixBoisson()">Annuler</button>
+<button class="btn btn-secondary" onclick="validerChoixBoisson(null)">Sans article</button>
+<button class="btn btn-primary" onclick="validerChoixBoisson(_boissonSelectee)">✓ Confirmer</button>
+</div>
+</div>
+</div>
+
+<!-- Supplément boisson -->
+
+<div class="modal-overlay" id="modal-suppl-boisson">
+<div class="modal" style="max-width:400px;text-align:center">
+<div style="font-size:36px;margin-bottom:8px">💰</div>
+<div class="modal-title" style="justify-content:center">Supplément boisson</div>
+<div id="suppl-boisson-detail" style="margin-bottom:20px;color:var(--text2);font-size:14px"></div>
+<div class="form-label" style="margin-bottom:10px">Comment encaisser le supplément ?</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px" id="suppl-paiement-btns">
+<div class="paiement-card" onclick="selectSupplPaiement('carte_popote')" data-mode="carte_popote">
+<div class="pc-icon">🍲</div><div class="pc-label" style="font-size:11px">Carte Popote</div>
+</div>
+<div class="paiement-card" onclick="selectSupplPaiement('espece')" data-mode="espece">
+<div class="pc-icon">💵</div><div class="pc-label" style="font-size:11px">Espèces</div>
+</div>
+<div class="paiement-card" onclick="selectSupplPaiement('carte')" data-mode="carte">
+<div class="pc-icon">💳</div><div class="pc-label" style="font-size:11px">CB</div>
+</div>
+</div>
+<div class="modal-actions" style="justify-content:center;gap:16px">
+<button class="btn btn-secondary" onclick="annulerSupplBoisson()">← Retour</button>
+<button class="btn btn-primary" onclick="validerSupplBoisson()">✓ Encaisser</button>
 </div>
 </div>
 </div>
@@ -846,72 +933,58 @@ document.getElementById('recent-history').innerHTML=recent.length?recent.map(his
 }
 
 function renderArgentImmobilise(){
-// Cartes popote : distinguer cartes payées (service dû) vs cartes à dette (argent à recevoir)
-let casesPayeesValeur=0; // cartes espèces/CB : déjà encaissé, service pas encore consommé
-let casesDetteValeur=0; // cartes à dette : argent PAS encore encaissé
-let detailCartes=[];
+let casesPayeesValeur=0;
+let casesDetteValeur=0;
 
 db.clients.forEach(client=>{
 client.cartes.forEach(carte=>{
 if(carte.statut==='active'||carte.statut==='en_attente'){
 const restant=carteRestant(carte);
 if(restant>0){
-const estDette=carte.paiementOuverture==='dette';
-if(estDette) casesDetteValeur+=restant;
+if(carte.paiementOuverture==='dette') casesDetteValeur+=restant;
 else casesPayeesValeur+=restant;
-detailCartes.push({nom:client.nom,statut:carte.statut,restant,estDette});
 }
 }
 });
 });
 
-// Stock frigo
 let stockAchat=0,stockVente=0;
-db.articles.forEach(a=>{stockAchat+=a.qte*a.prixAchat;stockVente+=a.qte*a.prixVente;});
+db.articles.forEach(a=>{
+if(a.type==='stock'&&a.qte>0){
+stockAchat+=a.qte*a.prixAchat;
+stockVente+=a.qte*a.prixVente;
+}
+});
 const margeStock=stockVente-stockAchat;
-
-// Argent réellement à rentrer = dettes cartes + marge stock
 const totalARentrer=casesDetteValeur+margeStock;
 
 document.getElementById('argent-immobilise').innerHTML=`
-<div class="grid-4" style="margin-bottom:16px">
+<div class="grid-4">
 <div class="stat-box">
-<div class="stat-label">🍲 Service dû (cartes payées)</div>
+<div class="stat-label">🍲 Service dû</div>
 <div class="stat-value yellow">${fmt(casesPayeesValeur)}</div>
-<div style="font-size:11px;color:var(--text2);margin-top:4px">Déjà encaissé — reste à consommer</div>
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Cartes payées — à consommer</div>
 </div>
 <div class="stat-box" style="border-color:var(--red)">
-<div class="stat-label">🔖 Cases à dette (non payées)</div>
+<div class="stat-label">🔖 Dettes cartes</div>
 <div class="stat-value red">${fmt(casesDetteValeur)}</div>
-<div style="font-size:11px;color:var(--text2);margin-top:4px">Argent pas encore reçu</div>
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Pas encore encaissé</div>
 </div>
 <div class="stat-box">
-<div class="stat-label">🧊 Marge stock frigo</div>
+<div class="stat-label">🧊 Marge stock</div>
 <div class="stat-value green">${fmt(margeStock)}</div>
-<div style="font-size:11px;color:var(--text2);margin-top:4px">Achat : ${fmt(stockAchat)} · Vente : ${fmt(stockVente)}</div>
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Achat: ${fmt(stockAchat)} · Vente: ${fmt(stockVente)}</div>
 </div>
 <div class="stat-box" style="border-color:var(--accent)">
 <div class="stat-label">💎 Bénéfice à rentrer</div>
 <div class="stat-value yellow">${fmt(totalARentrer)}</div>
-<div style="font-size:11px;color:var(--text2);margin-top:4px">Dettes cartes + Marge stock</div>
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Dettes + Marge stock</div>
 </div>
 </div>
-${detailCartes.length>0?`
-<div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px">Détail cartes en cours</div>
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px">
-${detailCartes.map(d=>`
-<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border:1px solid ${d.statut==='en_attente'?'var(--blue)':d.estDette?'var(--red)':'var(--border)'}">
-<div>
-<div style="font-weight:600;font-size:13px">${d.nom}</div>
-<div style="font-size:11px;color:var(--text2)">${d.statut==='en_attente'?'⏳ En attente':'▶ Active'} · ${d.estDette?'<span style="color:var(--red)">🔖 À dette</span>':'<span style="color:var(--green)">✅ Payée</span>'}</div>
-</div>
-<div style="font-family:var(--font-mono);font-weight:700;color:${d.estDette?'var(--red)':'var(--accent)'}">${fmt(d.restant)}</div>
-</div>`).join('')}
-</div>`:'<div class="text-muted" style="font-size:13px;text-align:center;padding:12px">Aucune carte en cours</div>'}
 `;
 }
 function renderAlerts(){
-const low=db.articles.filter(a=>a.qte<=a.stockMin);
+const low=db.articles.filter(a=>a.type==='stock'&&a.qte!=null&&a.qte<=a.stockMin);
 document.getElementById('alerts-zone').innerHTML=low.map(a=>`<div class="alert alert-warning">⚠️ Stock faible : <strong>${a.nom}</strong> — ${a.qte} restant (min: ${a.stockMin})</div>`).join('');
 }
 
@@ -1440,11 +1513,13 @@ formules=formules.filter(f=>f.categorieId===_venteCatFiltre);
 // Boutons formules (en premier, style différent)
 const formulesHTML=formules.map(f=>{
 const qteT=venteArticles[f.id]?.qte||0;
-// Vérifier si tous les articles de la formule sont disponibles
+// Vérifier si tous les articles en stock de la formule sont disponibles
 const dispo=f.articles.every(a=>{
 const art=db.articles.find(x=>x.id===a.articleId);
-const enTicket=venteArticles[art?.id]?.qte||0;
-return art&&art.qte-enTicket>=a.qte;
+if(!art)return false;
+if(art.type==='prestation')return true; // pas de stock à vérifier
+const enTicket=venteArticles[art.id]?.qte||0;
+return art.qte-enTicket>=a.qte;
 });
 return`<div class="article-btn ${!dispo?'zero-stock':''} ${qteT>0?'has-qty':''}"
 style="border-style:dashed;border-color:${dispo?'var(--purple)':'var(--border)'};${qteT>0?'background:#1e1a2e;border-color:var(--purple)':''}"
@@ -1461,12 +1536,21 @@ ${!dispo?'<div style="font-size:10px;color:var(--red);margin-top:3px">Stock insu
 // Boutons articles
 const articlesHTML=articles.map(a=>{
 const qteT=venteArticles[a.id]?.qte||0;
-const zero=a.qte<=0;
-return`<div class="article-btn ${zero?'zero-stock':''} ${qteT>0?'has-qty':''}" onclick="${zero?'':` venteAddArticle('${a.id}')`}">
-${qteT>0?`<div class="article-btn-qty-badge">${qteT}</div>`:''}
+const isPrestation=a.type==='prestation';
+const isRepas=a.type==='repas';
+const zero=a.type==='stock'&&a.qte<=0;
+const color=isRepas?'var(--green)':isPrestation?'var(--purple)':'';
+return`<div class="article-btn ${zero?'zero-stock':''} ${qteT>0?'has-qty':''}"
+onclick="${zero?'':` venteAddArticle('${a.id}')`}"
+style="${color?`border-color:${color};`:''}${qteT>0&&color?`background:${color}18;`:''}">
+${qteT>0?`<div class="article-btn-qty-badge" style="${color?'background:'+color:''}">${qteT}</div>`:''}
+${isRepas?`<div style="font-size:10px;color:var(--green);margin-bottom:2px;font-weight:600">🥘 REPAS</div>`:''}
+${isPrestation&&!isRepas?`<div style="font-size:10px;color:var(--purple);margin-bottom:2px;font-weight:600">🍽️ PRESTATION</div>`:''}
 <div class="article-btn-nom">${a.nom}</div>
-<div class="article-btn-prix">${fmt(a.prixVente)}</div>
-<div class="article-btn-stock">${zero?'❌ Rupture':`Stock: ${a.qte}${a.unite?' '+a.unite:''}`}</div>
+<div class="article-btn-prix" style="${color?'color:'+color:''}">${fmt(a.prixVente)}</div>
+<div class="article-btn-stock">
+${zero?'❌ Rupture':isRepas?`🥤 +boisson (${fmt(a.plafondBoisson||0.75)})`:isPrestation?'✅ Disponible':`Stock: ${a.qte}${a.unite?' '+a.unite:''}`}
+</div>
 </div>`;
 }).join('');
 
@@ -1500,14 +1584,225 @@ venteArticles[f.id]={nom:`${f.emoji} ${f.nom}`,prixVente:f.prix,prixAchat:0,qte:
 renderArticlesGrid();renderTicket();
 }
 
+// Variables pour le modal de choix de boisson
+let _repasEnCours=null; // l'article repas sélectionné
+let _boissonSelectee=null; // la boisson choisie dans le modal
+
 function venteAddArticle(articleId){
 const art=db.articles.find(a=>a.id===articleId);
-if(!art||art.qte<=0)return;
+if(!art)return;
+const isPrestation=art.type==='prestation';
+const isRepas=art.type==='repas';
+
+// Pour un repas → ouvrir le modal de choix de boisson
+if(isRepas){
+_repasEnCours=art;
+_boissonSelectee=null;
+ouvrirChoixBoisson(art);
+return;
+}
+
+if(!isPrestation&&art.qte<=0)return;
 const qteEnTicket=venteArticles[articleId]?.qte||0;
-if(qteEnTicket>=art.qte){toast(`❌ Stock max (${art.qte})`);return;}
+if(!isPrestation&&qteEnTicket>=art.qte){toast(`❌ Stock max (${art.qte})`);return;}
 if(venteArticles[articleId])venteArticles[articleId].qte++;
-else venteArticles[articleId]={nom:art.nom,prixVente:art.prixVente,prixAchat:art.prixAchat,qte:1};
+else venteArticles[articleId]={nom:art.nom,prixVente:art.prixVente,prixAchat:art.prixAchat,qte:1,isPrestation};
 renderArticlesGrid();renderTicket();
+}
+
+let _boissonCatFiltre=null;
+
+function ouvrirChoixBoisson(repas){
+const plafond=repas.plafondBoisson||0.75;
+document.getElementById('choix-boisson-repas-info').innerHTML=
+`<div style="font-weight:700;font-size:15px">🥘 ${repas.nom} — ${fmt(repas.prixVente)}</div>`;
+document.getElementById('choix-boisson-plafond').textContent=fmt(plafond);
+document.getElementById('choix-boisson-supplement').textContent='';
+_boissonCatFiltre=null;
+_boissonSelectee=null;
+
+renderChoixBoissonCats();
+renderChoixBoissonGrid();
+openModal('modal-choix-boisson');
+}
+
+function renderChoixBoissonCats(){
+const bar=document.getElementById('choix-boisson-cats');
+if(!bar)return;
+// Articles en stock disponibles (type stock)
+const articlesDispos=db.articles.filter(a=>a.type==='stock'&&a.qte>0);
+const gradesPrésents=[...new Set(articlesDispos.map(a=>a.categorieId).filter(Boolean))];
+let html=`<div class="cat-btn all ${_boissonCatFiltre===null?'active':''}" onclick="filtrerBoissonCat(null)">Tout</div>`;
+db.categories.filter(c=>gradesPrésents.includes(c.id)).forEach(c=>{
+html+=`<div class="cat-btn ${_boissonCatFiltre===c.id?'active':''}" onclick="filtrerBoissonCat('${c.id}')">${c.emoji} ${c.nom}</div>`;
+});
+const sansCat=articlesDispos.filter(a=>!a.categorieId).length;
+if(sansCat>0){
+html+=`<div class="cat-btn ${_boissonCatFiltre==='__none'?'active':''}" onclick="filtrerBoissonCat('__none')">Autres</div>`;
+}
+bar.innerHTML=html;
+}
+
+function filtrerBoissonCat(catId){
+_boissonCatFiltre=catId;
+renderChoixBoissonCats();
+renderChoixBoissonGrid();
+}
+
+function renderChoixBoissonGrid(){
+const plafond=_repasEnCours?.plafondBoisson||0.75;
+let articles=db.articles.filter(a=>a.type==='stock'&&a.qte>0);
+if(_boissonCatFiltre===null){
+// tout
+}else if(_boissonCatFiltre==='__none'){
+articles=articles.filter(a=>!a.categorieId);
+}else{
+articles=articles.filter(a=>a.categorieId===_boissonCatFiltre);
+}
+const grid=document.getElementById('choix-boisson-grid');
+if(!articles.length){
+grid.innerHTML='<div class="text-muted" style="padding:16px;text-align:center;grid-column:1/-1">Aucun article dans cette catégorie</div>';
+return;
+}
+grid.innerHTML=articles.map(b=>{
+const supplement=Math.max(0,Math.round((b.prixVente-plafond)*100)/100);
+const isSelected=_boissonSelectee===b.id;
+return`<div onclick="selectionnerBoisson('${b.id}')" id="boisson-btn-${b.id}" style="
+background:${isSelected?'var(--accent)':'var(--surface2)'};
+color:${isSelected?'#000':'var(--text)'};
+border:2px solid ${isSelected?'var(--accent)':'var(--border)'};
+border-radius:10px;padding:10px;cursor:pointer;text-align:center;transition:all 0.12s;">
+<div style="font-weight:600;font-size:13px">${b.nom}</div>
+<div style="font-size:12px;font-family:var(--font-mono);margin-top:3px">${fmt(b.prixVente)}</div>
+${supplement>0
+?`<div style="font-size:10px;color:${isSelected?'#700':'var(--red)'};margin-top:3px">+${fmt(supplement)}</div>`
+:`<div style="font-size:10px;color:${isSelected?'#050':'var(--green)'};margin-top:3px">✅ Inclus</div>`
+}
+<div style="font-size:10px;opacity:0.6;margin-top:1px">Stock: ${b.qte}</div>
+</div>`;
+}).join('');
+}
+
+function selectionnerBoisson(boissonId){
+_boissonSelectee=boissonId;
+renderChoixBoissonGrid(); // refresh pour afficher la sélection
+
+// Calculer et afficher le supplément
+const boisson=db.articles.find(a=>a.id===boissonId);
+const plafond=_repasEnCours?.plafondBoisson||0.75;
+const supplement=Math.max(0,Math.round((boisson.prixVente-plafond)*100)/100);
+const supEl=document.getElementById('choix-boisson-supplement');
+if(supplement>0){
+supEl.innerHTML=`💰 Supplément : <strong>+${fmt(supplement)}</strong> — sera encaissé séparément`;
+supEl.style.display='block';
+}else{
+supEl.innerHTML=`✅ ${boisson.nom} entièrement inclus dans le repas`;
+supEl.style.display='block';
+}
+}
+
+function annulerChoixBoisson(){
+_repasEnCours=null;_boissonSelectee=null;
+closeModal('modal-choix-boisson');
+}
+
+let _supplBoissonEnCours=null; // { boisson, supplement, repas }
+let _supplPaiement=null;
+
+function validerChoixBoisson(boissonId){
+if(!_repasEnCours)return;
+const repas=_repasEnCours;
+const plafond=repas.plafondBoisson||0.75;
+
+// Ajouter le repas au ticket
+const repasId=repas.id;
+if(venteArticles[repasId])venteArticles[repasId].qte++;
+else venteArticles[repasId]={nom:`🥘 ${repas.nom}`,prixVente:repas.prixVente,prixAchat:repas.prixAchat,qte:1,isPrestation:true,isRepas:true};
+
+if(boissonId){
+const boisson=db.articles.find(a=>a.id===boissonId);
+if(boisson&&boisson.qte>0){
+// Décrémenter le stock immédiatement
+boisson.qte--;
+saveDB();
+
+const supplement=Math.max(0,Math.round((boisson.prixVente-plafond)*100)/100);
+
+// Ajouter une ligne boisson gratuite au ticket (juste pour info)
+const boissonLigneId='boisson_'+boissonId+'_'+Date.now();
+venteArticles[boissonLigneId]={
+nom:`🥤 ${boisson.nom} (incluse)`,
+prixVente:0,prixAchat:boisson.prixAchat,
+qte:1,isBoissonIncluse:true,stockDejaDecompte:true
+};
+
+closeModal('modal-choix-boisson');
+_repasEnCours=null;_boissonSelectee=null;
+
+if(supplement>0){
+// Ouvrir modal supplément
+_supplBoissonEnCours={boisson,supplement,repasNom:repas.nom};
+_supplPaiement=null;
+document.getElementById('suppl-boisson-detail').innerHTML=`
+<div style="font-size:16px;font-weight:700;margin-bottom:6px">${boisson.nom}</div>
+<div style="margin-bottom:4px">Prix boisson : <span class="mono">${fmt(boisson.prixVente)}</span></div>
+<div style="margin-bottom:4px">Plafond inclus : <span class="mono text-green">− ${fmt(plafond)}</span></div>
+<div style="font-size:20px;font-weight:800;color:var(--accent);margin-top:10px">Supplément : ${fmt(supplement)}</div>`;
+document.querySelectorAll('#suppl-paiement-btns .paiement-card').forEach(el=>el.classList.remove('selected'));
+openModal('modal-suppl-boisson');
+}else{
+renderArticlesGrid();renderTicket();
+}
+return;
+}
+}
+
+closeModal('modal-choix-boisson');
+_repasEnCours=null;_boissonSelectee=null;
+renderArticlesGrid();renderTicket();
+}
+
+function selectSupplPaiement(mode){
+_supplPaiement=mode;
+document.querySelectorAll('#suppl-paiement-btns .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));
+}
+
+function annulerSupplBoisson(){
+// Pas de supplément, on ferme juste
+_supplBoissonEnCours=null;_supplPaiement=null;
+closeModal('modal-suppl-boisson');
+renderArticlesGrid();renderTicket();
+toast('ℹ️ Supplément non encaissé');
+}
+
+function validerSupplBoisson(){
+if(!_supplBoissonEnCours){closeModal('modal-suppl-boisson');return;}
+if(!_supplPaiement){toast('❌ Choisis un mode de paiement');return;}
+
+const {boisson,supplement,repasNom}=_supplBoissonEnCours;
+const clientId=_venteClientId;
+const client=clientId?db.clients.find(c=>c.id===clientId):null;
+const nomLabel=client?client.nom:'Vente libre';
+
+if(_supplPaiement==='carte_popote'){
+if(!client){toast('❌ Sélectionne un client pour la carte Popote');return;}
+const ca=client.cartes.find(c=>c.statut==='active');
+if(!ca){toast('❌ Ce client n\'a pas de carte active');return;}
+cocherCases(client,supplement);
+addHistorique({type:'vente',label:`Supplément boisson — ${nomLabel}`,montant:supplement,paiement:'carte_popote',clientId,note:`${boisson.nom} avec ${repasNom}`});
+}else if(_supplPaiement==='espece'){
+db.caisse.liquide+=supplement;
+addHistorique({type:'vente',label:`Supplément boisson — ${nomLabel}`,montant:supplement,paiement:'espece',clientId,note:`${boisson.nom} avec ${repasNom}`});
+}else{
+db.caisse.compte+=supplement;
+addHistorique({type:'vente',label:`Supplément boisson — ${nomLabel}`,montant:supplement,paiement:'carte',clientId,note:`${boisson.nom} avec ${repasNom}`});
+}
+
+saveDB();
+_supplBoissonEnCours=null;_supplPaiement=null;
+closeModal('modal-suppl-boisson');
+renderArticlesGrid();renderTicket();
+toast(`✅ Supplément de ${fmt(supplement)} encaissé`);
 }
 
 function venteChangeQte(articleId,delta){
@@ -1622,17 +1917,18 @@ addHistorique({type:'vente',label:`Vente CB — ${nomLabel}`,montant:total,paiem
 toast(`✅ ${fmt(total)} par CB`);
 }
 
-// Décrémenter stock (articles directs + articles dans les formules)
+// Décrémenter stock (sauf prestations, repas, et boissons déjà décomptées)
 lines.forEach(([id,v])=>{
 if(v.isFormule){
-// Décrémenter chaque article de la formule
 v.formuleArticles.forEach(fl=>{
 const art=db.articles.find(a=>a.id===fl.articleId);
-if(art)art.qte-=fl.qte*v.qte;
+if(art&&art.type==='stock')art.qte-=fl.qte*v.qte;
 });
+}else if(v.stockDejaDecompte||v.isPrestation||v.isRepas||v.isSupplBoisson||v.isBoissonIncluse){
+// Déjà géré ou pas de stock à décrémenter
 }else{
 const art=db.articles.find(a=>a.id===id);
-if(art)art.qte-=v.qte;
+if(art&&art.type==='stock')art.qte-=v.qte;
 }
 });
 saveDB();venteReset();
@@ -1749,22 +2045,48 @@ toast('✅ Formule supprimée');
 // ================================================
 // STOCK
 // ================================================
+let _naType='stock'; // type sélectionné dans modal nouvel article
+let _eaType='stock'; // type sélectionné dans modal edit article
+
+function selectTypeArticle(type){
+_naType=type;
+document.querySelectorAll('#na-type-choix .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.type===type));
+document.getElementById('na-stock-fields').style.display=type==='stock'?'':'none';
+document.getElementById('na-repas-fields').style.display=type==='repas'?'':'none';
+}
+function selectTypeArticleEdit(type){
+_eaType=type;
+document.querySelectorAll('#ea-type-choix .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.type===type));
+document.getElementById('ea-stock-fields').style.display=type==='stock'?'':'none';
+document.getElementById('ea-repas-fields').style.display=type==='repas'?'':'none';
+}
 function renderStock(){
 const s=(document.getElementById('search-stock')?.value||'').toLowerCase();
 const f=db.articles.filter(a=>a.nom.toLowerCase().includes(s));
-document.getElementById('stock-alerts').innerHTML=db.articles.filter(a=>a.qte<=a.stockMin)
+// Alertes uniquement pour les articles en stock
+document.getElementById('stock-alerts').innerHTML=db.articles
+.filter(a=>a.type==='stock'&&a.qte<=a.stockMin)
 .map(a=>`<div class="alert alert-warning">⚠️ <strong>${a.nom}</strong> — ${a.qte} restant (min: ${a.stockMin})</div>`).join('');
 const tbody=document.getElementById('stock-tbody');
 if(!f.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:24px">Aucun article</td></tr>';return;}
 tbody.innerHTML=f.map(a=>{
-const m=a.prixAchat>0?((a.prixVente-a.prixAchat)/a.prixAchat*100).toFixed(0):'—';
-const low=a.qte<=a.stockMin;
+const isPrestation=a.type==='prestation';
+const isRepas=a.type==='repas';
+const isStock=a.type==='stock'||!a.type;
 const cat=db.categories.find(c=>c.id===a.categorieId);
+const m=(isStock&&a.prixAchat>0)?((a.prixVente-a.prixAchat)/a.prixAchat*100).toFixed(0):'—';
+const low=isStock&&a.qte<=a.stockMin;
 return`<tr>
-<td><strong>${a.nom}</strong>${a.unite?`<span style="color:var(--text2);font-size:11px"> (${a.unite})</span>`:''}</td>
+<td>
+<strong>${a.nom}</strong>
+${isRepas?`<span style="background:#0d2a1a;color:var(--green);font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px">🥘 Repas</span>`:''}
+${isPrestation?`<span style="background:#2a1a3e;color:var(--purple);font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px">🍽️ Prestation</span>`:''}
+${isRepas?`<span style="color:var(--text2);font-size:11px;margin-left:4px">boisson incluse ≤${fmt(a.plafondBoisson||0.75)}</span>`:''}
+${isStock&&a.unite?`<span style="color:var(--text2);font-size:11px"> (${a.unite})</span>`:''}
+</td>
 <td><span class="badge badge-gray">${cat?`${cat.emoji} ${cat.nom}`:'—'}</span></td>
-<td><span class="${low?'text-red':'text-green'} mono fw-700">${a.qte}</span>${low?'<span class="badge badge-red" style="margin-left:6px">⚠️</span>':''}</td>
-<td class="mono text-muted">${a.stockMin}</td>
+<td>${isStock?`<span class="${low?'text-red':'text-green'} mono fw-700">${a.qte}</span>${low?'<span class="badge badge-red" style="margin-left:6px">⚠️</span>':''}`:'<span style="color:var(--text2);font-size:12px">Sans stock</span>'}</td>
+<td class="mono text-muted">${isStock?a.stockMin:'—'}</td>
 <td class="mono text-red">${fmt(a.prixAchat)}</td>
 <td class="mono text-yellow">${fmt(a.prixVente)}</td>
 <td class="mono text-green">+${m}%</td>
@@ -1774,38 +2096,62 @@ return`<tr>
 }
 function createArticle(){
 const nom=document.getElementById('na-nom').value.trim();
-const prixAchat=parseFloat(document.getElementById('na-achat').value);
+const prixAchat=parseFloat(document.getElementById('na-achat').value)||0;
 const prixVente=parseFloat(document.getElementById('na-vente').value);
 if(!nom){toast('❌ Nom obligatoire');return;}
-if(isNaN(prixAchat)||isNaN(prixVente)){toast('❌ Prix invalides');return;}
-db.articles.push({id:uid(),nom,prixAchat,prixVente,qte:parseInt(document.getElementById('na-qte').value)||0,stockMin:parseInt(document.getElementById('na-min').value)||2,unite:document.getElementById('na-unite').value.trim(),categorieId:document.getElementById('na-categorie').value||null});
+if(isNaN(prixVente)){toast('❌ Prix de vente invalide');return;}
+const isStock=_naType==='stock';
+const isRepas=_naType==='repas';
+db.articles.push({
+id:uid(),nom,prixAchat,prixVente,
+qte:isStock?(parseInt(document.getElementById('na-qte').value)||0):null,
+stockMin:isStock?(parseInt(document.getElementById('na-min').value)||2):null,
+unite:isStock?(document.getElementById('na-unite').value.trim()):'',
+categorieId:document.getElementById('na-categorie').value||null,
+type:_naType,
+plafondBoisson:isRepas?(parseFloat(document.getElementById('na-plafond').value)||0.75):null,
+});
 saveDB();closeModal('modal-new-article');
 ['na-nom','na-achat','na-vente','na-qte','na-min','na-unite'].forEach(id=>document.getElementById(id).value='');
 document.getElementById('na-categorie').value='';
+document.getElementById('na-plafond').value='0.75';
+_naType='stock';selectTypeArticle('stock');
 renderStock();toast(`✅ Article créé`);
 }
 function editArticle(id){
 const a=db.articles.find(x=>x.id===id);if(!a)return;
 updateCategorieSelects();
+_eaType=a.type||'stock';
 document.getElementById('ea-id').value=id;
 document.getElementById('ea-nom').value=a.nom;
 document.getElementById('ea-achat').value=a.prixAchat;
 document.getElementById('ea-vente').value=a.prixVente;
-document.getElementById('ea-qte').value=a.qte;
-document.getElementById('ea-min').value=a.stockMin;
+document.getElementById('ea-qte').value=a.qte||0;
+document.getElementById('ea-min').value=a.stockMin||0;
 document.getElementById('ea-unite').value=a.unite||'';
+document.getElementById('ea-plafond').value=a.plafondBoisson||0.75;
 document.getElementById('ea-categorie').value=a.categorieId||'';
+selectTypeArticleEdit(_eaType);
 openModal('modal-edit-article');
 }
 function saveArticle(){
 const id=document.getElementById('ea-id').value;
 const a=db.articles.find(x=>x.id===id);if(!a)return;
 a.nom=document.getElementById('ea-nom').value.trim();
-a.prixAchat=parseFloat(document.getElementById('ea-achat').value);
+a.prixAchat=parseFloat(document.getElementById('ea-achat').value)||0;
 a.prixVente=parseFloat(document.getElementById('ea-vente').value);
+a.type=_eaType;
+if(_eaType==='stock'){
 a.qte=parseInt(document.getElementById('ea-qte').value)||0;
 a.stockMin=parseInt(document.getElementById('ea-min').value)||0;
 a.unite=document.getElementById('ea-unite').value.trim();
+a.plafondBoisson=null;
+}else if(_eaType==='repas'){
+a.qte=null;a.stockMin=null;a.unite='';
+a.plafondBoisson=parseFloat(document.getElementById('ea-plafond').value)||0.75;
+}else{
+a.qte=null;a.stockMin=null;a.unite='';a.plafondBoisson=null;
+}
 a.categorieId=document.getElementById('ea-categorie').value||null;
 saveDB();closeModal('modal-edit-article');renderStock();
 if(document.getElementById('page-vente').classList.contains('active')){renderVenteCatsBar();renderArticlesGrid();}
