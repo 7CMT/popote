@@ -52,37 +52,22 @@ background-attachment: fixed;
 background-size: cover;
 background-position: center;
 }
-/* Avec fond : effet verre sur les surfaces principales SEULEMENT */
-body.has-bg-image header,
-body.has-bg-image .modal {
-backdrop-filter: blur(16px);
--webkit-backdrop-filter: blur(16px);
-background: rgba(24,24,31,0.88) !important;
-}
-/* Les cartes, boutons articles et ticket restent OPAQUES pour lisibilité */
+body.has-bg-image #app { background: transparent; }
 body.has-bg-image .card,
-body.has-bg-image .stat-box,
+body.has-bg-image header,
+body.has-bg-image .modal,
 body.has-bg-image .ticket,
-body.has-bg-image .article-btn,
-body.has-bg-image .paiement-card,
-body.has-bg-image .cat-btn {
-background: var(–surface) !important;
-}
-body.has-bg-image .article-btn {
-background: var(–surface2) !important;
-}
-/* Thème clair avec fond */
-body.has-bg-image.theme-clair header,
-body.has-bg-image.theme-clair .modal {
-background: rgba(245,245,240,0.92) !important;
+body.has-bg-image .stat-box {
+backdrop-filter: blur(12px);
+-webkit-backdrop-filter: blur(12px);
+background: rgba(24,24,31,0.82) !important;
 }
 body.has-bg-image.theme-clair .card,
-body.has-bg-image.theme-clair .stat-box,
-body.has-bg-image.theme-clair .ticket {
-background: #ffffff !important;
-}
-body.has-bg-image.theme-clair .article-btn {
-background: var(–surface2) !important;
+body.has-bg-image.theme-clair header,
+body.has-bg-image.theme-clair .modal,
+body.has-bg-image.theme-clair .ticket,
+body.has-bg-image.theme-clair .stat-box {
+background: rgba(245,245,240,0.85) !important;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(–font-main);background:var(–bg);color:var(–text);min-height:100vh;font-size:14px;overflow-x:hidden;}
