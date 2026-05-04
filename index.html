@@ -46,44 +46,6 @@ font-weight: 700;
 .paiement-card.selected {
 box-shadow: 0 0 0 3px rgba(240,180,41,0.4);
 }
-/* Fond d’écran personnalisé */
-body.has-bg-image {
-background-attachment: fixed;
-background-size: cover;
-background-position: center;
-}
-/* Avec fond : effet verre sur les surfaces principales SEULEMENT */
-body.has-bg-image header,
-body.has-bg-image .modal {
-backdrop-filter: blur(16px);
--webkit-backdrop-filter: blur(16px);
-background: rgba(24,24,31,0.88) !important;
-}
-/* Les cartes, boutons articles et ticket restent OPAQUES pour lisibilité */
-body.has-bg-image .card,
-body.has-bg-image .stat-box,
-body.has-bg-image .ticket,
-body.has-bg-image .article-btn,
-body.has-bg-image .paiement-card,
-body.has-bg-image .cat-btn {
-background: var(–surface) !important;
-}
-body.has-bg-image .article-btn {
-background: var(–surface2) !important;
-}
-/* Thème clair avec fond */
-body.has-bg-image.theme-clair header,
-body.has-bg-image.theme-clair .modal {
-background: rgba(245,245,240,0.92) !important;
-}
-body.has-bg-image.theme-clair .card,
-body.has-bg-image.theme-clair .stat-box,
-body.has-bg-image.theme-clair .ticket {
-background: #ffffff !important;
-}
-body.has-bg-image.theme-clair .article-btn {
-background: var(–surface2) !important;
-}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(–font-main);background:var(–bg);color:var(–text);min-height:100vh;font-size:14px;overflow-x:hidden;}
 #app{display:flex;flex-direction:column;min-height:100vh;}
@@ -496,17 +458,6 @@ Appuie pour ajouter au ticket ↓
 <div style="display:flex;gap:8px">
 <button class="btn btn-secondary btn-sm" onclick="document.getElementById('param-logo-input').click()">📁 Choisir</button>
 <button class="btn btn-danger btn-sm" onclick="supprimerLogo()">✕</button>
-</div>
-</div>
-<div class="form-group">
-<label class="form-label">Photo de fond d'écran</label>
-<div id="param-bg-preview" style="width:100%;height:80px;background:var(--surface2);border:2px dashed var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-bottom:8px;overflow:hidden;background-size:cover;background-position:center">
-<span style="color:var(--text2);font-size:13px" id="param-bg-preview-label">Aucun fond</span>
-</div>
-<input type="file" id="param-bg-input" accept="image/*" style="display:none" onchange="chargerBgImage(this)">
-<div style="display:flex;gap:8px">
-<button class="btn btn-secondary btn-sm" onclick="document.getElementById('param-bg-input').click()">📁 Choisir</button>
-<button class="btn btn-danger btn-sm" onclick="supprimerBgImage()">✕</button>
 </div>
 </div>
 </div>
@@ -2822,8 +2773,7 @@ nom:'Popote',soustitre:'Gestion',
 couleurAccent:'#f0b429',couleurCase:'#f0b429',
 theme:'sombre',taille:'moyen',tailleBtn:'moyen',
 casesN:40,caseVal:0.25,
-logo:null,
-bgImage:null
+logo:null
 };
 
 function loadParams(){
@@ -2847,14 +2797,6 @@ document.documentElement.style.setProperty('--accent',params.couleurAccent);
 document.documentElement.style.setProperty('--selection-bg',params.couleurAccent);
 // Couleur cases
 document.documentElement.style.setProperty('--case-color',params.couleurCase);
-// Photo de fond
-if(params.bgImage){
-document.body.style.backgroundImage=`url(${params.bgImage})`;
-document.body.classList.add('has-bg-image');
-}else{
-document.body.style.backgroundImage='';
-document.body.classList.remove('has-bg-image');
-}
 // Thème
 if(params.theme==='clair'){
 document.body.classList.add('theme-clair');
@@ -2914,16 +2856,6 @@ updateCarteTotal();
 // Logo preview
 if(params.logo){
 document.getElementById('param-logo-preview').innerHTML=`<img src="${params.logo}" style="max-height:80px;max-width:100%;object-fit:contain;border-radius:8px">`;
-}
-// Fond d'écran preview
-const bgPrev=document.getElementById('param-bg-preview');
-const bgLabel=document.getElementById('param-bg-preview-label');
-if(bgPrev&&params.bgImage){
-bgPrev.style.backgroundImage=`url(${params.bgImage})`;
-if(bgLabel)bgLabel.style.display='none';
-}else if(bgPrev){
-bgPrev.style.backgroundImage='';
-if(bgLabel)bgLabel.style.display='';
 }
 
 // Couleurs accent
@@ -3021,27 +2953,6 @@ document.getElementById('param-logo-preview').innerHTML='<span style="color:var(
 appliquerParams();
 }
 
-function chargerBgImage(input){
-const file=input.files[0];if(!file)return;
-const reader=new FileReader();
-reader.onload=e=>{
-params.bgImage=e.target.result;
-const prev=document.getElementById('param-bg-preview');
-prev.style.backgroundImage=`url(${params.bgImage})`;
-document.getElementById('param-bg-preview-label').style.display='none';
-appliquerParams();
-toast('✅ Fond d\'écran appliqué !');
-};
-reader.readAsDataURL(file);
-}
-function supprimerBgImage(){
-params.bgImage=null;
-const prev=document.getElementById('param-bg-preview');
-prev.style.backgroundImage='';
-document.getElementById('param-bg-preview-label').style.display='';
-appliquerParams();
-toast('✅ Fond d\'écran supprimé');
-}
 
 function sauvegarderParametres(){
 params.nom=document.getElementById('param-nom').value.trim()||'Popote';
