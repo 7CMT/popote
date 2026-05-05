@@ -139,7 +139,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 .paiement-choix{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;}
 .paiement-card{border:2px solid var(–border);border-radius:var(–radius);padding:16px 10px;cursor:pointer;text-align:center;transition:all 0.15s;background:var(–surface2);}
 .paiement-card:hover{border-color:var(–accent);}
-.paiement-card.selected{border-color:var(–accent);background:#2d2410;}
+.paiement-card.selected{border-color:var(–accent);background:#2d2410;box-shadow:0 0 0 3px rgba(240,180,41,0.25);}
 .paiement-card .pc-icon{font-size:24px;margin-bottom:6px;}
 .paiement-card .pc-label{font-weight:600;font-size:13px;}
 .paiement-card .pc-sub{font-size:11px;color:var(–text2);margin-top:3px;}
@@ -153,7 +153,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 .cats-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
 .cat-btn{padding:8px 16px;border-radius:20px;border:2px solid var(–border);background:var(–surface2);color:var(–text2);cursor:pointer;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
 .cat-btn:hover{border-color:var(–accent);color:var(–text);}
-.cat-btn.active{background:var(–accent);border-color:var(–accent);color:#000;}
+.cat-btn.active{background:var(–accent);border-color:var(–accent);color:#000;font-weight:700;box-shadow:0 0 0 3px rgba(240,180,41,0.3);}
 .cat-btn.all{border-color:var(–accent);}
 
 /* PARAMETRES */
@@ -176,7 +176,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 <button class="nav-btn" onclick="showPage('stock')" id="nav-stock">📦 Stock</button>
 <button class="nav-btn" onclick="showPage('caisse')" id="nav-caisse">💰 Caisse</button>
 <button class="nav-btn" onclick="showPage('historique')" id="nav-historique">📋 Historique</button>
-<button class="nav-btn" onclick="showPage('parametres')" id="nav-parametres">⚙️ Paramètres</button>
+<button class="nav-btn" onclick="showPageSecure('parametres')" id="nav-parametres">⚙️ Paramètres 🔒</button>
 </nav>
 </header>
 <main>
@@ -261,6 +261,7 @@ Appuie pour ajouter au ticket ↓
 </div>
 </div>
 <div id="stock-alerts"></div>
+<div class="cats-bar" id="stock-cats-bar"></div>
 <div class="card">
 <div class="search-bar">
 <input class="form-input" id="search-stock" placeholder="🔍 Rechercher..." oninput="renderStock()">
@@ -328,6 +329,19 @@ Appuie pour ajouter au ticket ↓
 <div class="card-title" style="margin:0">📋 Historique</div>
 <button class="btn btn-secondary btn-sm" onclick="exportCSV()">📥 Export CSV</button>
 </div>
+<div class="cats-bar mb-16" id="history-periode-bar">
+<div class="cat-btn active" onclick="filtrerHistoriqueDate('tout')">Tout</div>
+<div class="cat-btn" onclick="filtrerHistoriqueDate('aujourd')">Aujourd'hui</div>
+<div class="cat-btn" onclick="filtrerHistoriqueDate('semaine')">Cette semaine</div>
+<div class="cat-btn" onclick="filtrerHistoriqueDate('mois')">Ce mois</div>
+<div class="cat-btn" onclick="filtrerHistoriqueDate('perso')">📅 Période...</div>
+</div>
+<div id="history-perso-dates" style="display:none;margin-bottom:12px" class="card">
+<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+<div style="flex:1;min-width:140px"><label class="form-label">Du</label><input class="form-input" type="date" id="history-date-debut" onchange="renderHistory()"></div>
+<div style="flex:1;min-width:140px"><label class="form-label">Au</label><input class="form-input" type="date" id="history-date-fin" onchange="renderHistory()"></div>
+</div>
+</div>
 <div class="card">
 <div class="search-bar">
 <input class="form-input" id="search-history" placeholder="🔍 Rechercher..." oninput="renderHistory()">
@@ -341,7 +355,23 @@ Appuie pour ajouter au ticket ↓
 <option value="rentree">Rentrées</option>
 </select>
 </div>
+<div id="history-count" style="font-size:12px;color:var(--text2);margin-bottom:10px;font-family:var(--font-mono)"></div>
 <div id="history-list"></div>
+</div>
+<div class="card" style="border-color:var(--red)">
+<div class="card-title" style="color:var(--red)">🗑️ Nettoyage de l'historique</div>
+<div class="alert alert-danger" style="margin-bottom:14px">⚠️ Action irréversible. Exporte en CSV avant de nettoyer.</div>
+<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+<div style="flex:1;min-width:180px"><label class="form-label">Supprimer avant le</label><input class="form-input" type="date" id="clean-history-date"></div>
+<button class="btn btn-danger" onclick="nettoyerHistoriqueSecure()" style="flex-shrink:0">🗑️ Nettoyer 🔒</button>
+</div>
+<div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+<button class="btn btn-secondary btn-sm" onclick="setCleanDate(30)">− 1 mois</button>
+<button class="btn btn-secondary btn-sm" onclick="setCleanDate(90)">− 3 mois</button>
+<button class="btn btn-secondary btn-sm" onclick="setCleanDate(180)">− 6 mois</button>
+<button class="btn btn-secondary btn-sm" onclick="setCleanDate(365)">− 1 an</button>
+</div>
+<div id="clean-history-count" style="font-size:12px;color:var(--text2);margin-top:10px"></div>
 </div>
 </div>
 
@@ -477,6 +507,7 @@ Appuie pour ajouter au ticket ↓
 <!-- Boutons -->
 
 <div style="display:flex;gap:12px;justify-content:flex-end">
+<button class="btn btn-secondary" onclick="changerPin()">🔑 Changer le code PIN</button>
 <button class="btn btn-secondary" onclick="resetParametres()">↺ Réinitialiser</button>
 <button class="btn btn-primary" onclick="sauvegarderParametres()">✓ Sauvegarder</button>
 </div>
@@ -802,7 +833,7 @@ Appuie pour ajouter au ticket ↓
 <!-- Courses -->
 
 <div class="modal-overlay" id="modal-courses">
-<div class="modal" style="max-width:560px">
+<div class="modal" style="max-width:600px">
 <div class="modal-title">🛍️ Enregistrer des courses</div>
 <div class="form-group"><label class="form-label">Montant total (€)</label><input class="form-input" type="number" id="courses-montant" placeholder="0.00" step="0.01"></div>
 <div class="form-group"><label class="form-label">Payé avec</label>
@@ -813,12 +844,59 @@ Appuie pour ajouter au ticket ↓
 </div>
 <div class="form-group"><label class="form-label">Note (optionnel)</label><input class="form-input" id="courses-note" placeholder="Ex: Supermarché, marché..."></div>
 <hr class="divider">
-<div class="section-title">Mise à jour du stock</div>
-<div id="courses-articles-list"></div>
-<button class="btn btn-secondary btn-sm" onclick="coursesAddLine()">+ Ajouter un article</button>
+<div class="section-title" style="margin-bottom:8px">Articles à réapprovisionner</div>
+<div class="cats-bar" id="courses-cats-bar" style="margin-bottom:12px"></div>
+<div id="courses-articles-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;max-height:240px;overflow-y:auto;margin-bottom:12px"></div>
+<div id="courses-articles-list" style="margin-bottom:8px"></div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="closeModal('modal-courses')">Annuler</button>
 <button class="btn btn-primary" onclick="validerCourses()">✓ Valider</button>
+</div>
+</div>
+</div>
+
+<!-- Modal PIN -->
+
+<div class="modal-overlay" id="modal-pin">
+<div class="modal" style="max-width:320px;text-align:center">
+<div style="font-size:36px;margin-bottom:10px">🔒</div>
+<div class="modal-title" style="justify-content:center" id="pin-title">Accès sécurisé</div>
+<div style="color:var(--text2);font-size:13px;margin-bottom:20px" id="pin-subtitle">Entre ton code PIN</div>
+<div style="display:flex;justify-content:center;gap:12px;margin-bottom:20px">
+<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent" id="pin-dot-0"></div>
+<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent" id="pin-dot-1"></div>
+<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent" id="pin-dot-2"></div>
+<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent" id="pin-dot-3"></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;max-width:220px;margin:0 auto 16px">
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('1')">1</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('2')">2</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('3')">3</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('4')">4</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('5')">5</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('6')">6</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('7')">7</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('8')">8</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('9')">9</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:16px;padding:14px" onclick="pinEffacer()">⌫</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:20px;padding:14px" onclick="pinSaisir('0')">0</button>
+<button class="btn btn-secondary" style="justify-content:center;font-size:16px;padding:14px" onclick="closeModal('modal-pin')">✕</button>
+</div>
+<div id="pin-erreur" style="color:var(--red);font-size:13px;min-height:20px"></div>
+</div>
+</div>
+
+<!-- Confirmation nettoyage historique -->
+
+<div class="modal-overlay" id="modal-confirm-clean">
+<div class="modal" style="max-width:400px;text-align:center">
+<div style="font-size:40px;margin-bottom:12px">🗑️</div>
+<div class="modal-title" style="justify-content:center">Nettoyer l'historique ?</div>
+<div id="confirm-clean-detail" style="color:var(--text2);margin-bottom:8px;font-size:14px;line-height:1.6"></div>
+<div class="alert alert-danger" style="margin:12px 0;font-size:12px">Action irréversible. Exporte d'abord en CSV si nécessaire.</div>
+<div style="display:flex;gap:12px;justify-content:center">
+<button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="closeModal('modal-confirm-clean')">Annuler</button>
+<button class="btn btn-danger" style="flex:1;justify-content:center" onclick="confirmerNettoyage()">🗑️ Supprimer</button>
 </div>
 </div>
 </div>
@@ -2062,7 +2140,11 @@ document.getElementById('ea-repas-fields').style.display=type==='repas'?'':'none
 }
 function renderStock(){
 const s=(document.getElementById('search-stock')?.value||'').toLowerCase();
-const f=db.articles.filter(a=>a.nom.toLowerCase().includes(s));
+renderStockCatsBar();
+let f=db.articles.filter(a=>a.nom.toLowerCase().includes(s));
+if(_stockCatFiltre===null){}
+else if(_stockCatFiltre==='__none')f=f.filter(a=>!a.categorieId);
+else f=f.filter(a=>a.categorieId===_stockCatFiltre);
 // Alertes uniquement pour les articles en stock
 document.getElementById('stock-alerts').innerHTML=db.articles
 .filter(a=>a.type==='stock'&&a.qte<=a.stockMin)
@@ -2168,25 +2250,27 @@ saveDB();renderStock();toast('✅ Supprimé');
 // ================================================
 let coursesLines=[];
 function openCoursesModal(){
-coursesLines=[];renderCoursesLines();
+coursesLines=[];_coursesCatFiltre=null;
 document.getElementById('courses-montant').value='';
 document.getElementById('courses-note').value='';
+renderCoursesCatsBar();renderCoursesGrid();renderCoursesLines();
 openModal('modal-courses');
 }
 function coursesAddLine(){coursesLines.push({articleId:'',qte:0});renderCoursesLines();}
 function renderCoursesLines(){
 const el=document.getElementById('courses-articles-list');
-if(!coursesLines.length){el.innerHTML='<div class="text-muted" style="font-size:12px;margin-bottom:10px">Aucun article</div>';return;}
-el.innerHTML=coursesLines.map((line,i)=>`
-<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
-<select class="form-select" style="flex:2" onchange="coursesLines[${i}].articleId=this.value">
-<option value="">-- Article --</option>
-${db.articles.map(a=>`<option value="${a.id}" ${line.articleId===a.id?'selected':''}>${a.nom}</option>`).join('')}
-</select>
-<input class="form-input" type="number" style="flex:1;min-width:70px" placeholder="Qté" min="0"
-value="${line.qte||''}" onchange="coursesLines[${i}].qte=parseInt(this.value)||0">
-<button class="btn btn-danger btn-sm" onclick="coursesLines.splice(${i},1);renderCoursesLines()">✕</button>
-</div>`).join('');
+const selected=coursesLines.filter(l=>l.articleId&&l.qte>0);
+if(!selected.length){el.innerHTML='<div class="text-muted" style="font-size:12px;margin-bottom:4px">Appuie sur un article ci-dessus pour l\'ajouter 👆</div>';return;}
+el.innerHTML=`<div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600">Articles sélectionnés :</div>`+
+selected.map(line=>{
+const art=db.articles.find(a=>a.id===line.articleId);
+return`<div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;background:var(--surface2);border-radius:8px;padding:8px 10px">
+<span style="flex:1;font-size:13px;font-weight:600">${art?.nom||'?'}</span>
+<button class="qty-btn" onclick="coursesChangeQte('${line.articleId}',-1)">−</button>
+<span class="mono" style="min-width:24px;text-align:center;font-weight:700">+${line.qte}</span>
+<button class="qty-btn" onclick="coursesChangeQte('${line.articleId}',1)">+</button>
+<button class="btn btn-danger btn-sm" onclick="coursesSupprLigne('${line.articleId}')">✕</button>
+</div>`;}).join('');
 }
 function validerCourses(){
 const montant=parseFloat(document.getElementById('courses-montant').value);
@@ -2280,10 +2364,16 @@ return`<div class="history-item">
 function renderHistory(){
 const s=(document.getElementById('search-history')?.value||'').toLowerCase();
 const f=document.getElementById('filter-history')?.value||'';
-let list=[...db.historique].reverse();
-if(s)list=list.filter(h=>h.label.toLowerCase().includes(s)||(h.note||'').toLowerCase().includes(s));
-if(f)list=list.filter(h=>h.type===f);
-document.getElementById('history-list').innerHTML=list.length?list.map(histHTML).join(''):'<div class="text-muted" style="text-align:center;padding:32px">Aucune transaction</div>';
+const {debut,fin}=getHistoryDateRange();
+let list=[...db.historique].reverse().filter(h=>{
+const ms=h.label.toLowerCase().includes(s)||(h.note||'').toLowerCase().includes(s);
+const mt=!f||h.type===f;
+const md=h.ts>=debut&&h.ts<=fin;
+return ms&&mt&&md;
+});
+const countEl=document.getElementById('history-count');
+if(countEl)countEl.textContent=`${list.length} transaction${list.length>1?'s':''} affichée${list.length>1?'s':''}`;
+document.getElementById('history-list').innerHTML=list.length?list.map(histHTML).join(''):'<div class="text-muted" style="text-align:center;padding:32px">Aucune transaction sur cette période</div>';
 }
 function exportCSV(){
 const rows=[['Date','Type','Label','Montant','Paiement','Articles','Note']];
@@ -2508,6 +2598,218 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('clic
 // Attacher les events des inputs carte
 document.getElementById('param-cases-n')?.addEventListener('input',updateCarteTotal);
 document.getElementById('param-case-val')?.addEventListener('input',updateCarteTotal);
+
+// ================================================
+// PIN SYSTÈME
+// ================================================
+const PIN_KEY='popote_pin_v1';
+let _pinEnCours='',_pinCiblePage=null,_pinMode='verif',_pinTemp='',_pinCallback=null;
+function getPin(){return localStorage.getItem(PIN_KEY)||'0007';}
+function setPin(p){localStorage.setItem(PIN_KEY,p);}
+
+function showPageSecure(name){
+if(!localStorage.getItem(PIN_KEY))setPin('0007');
+_pinMode='verif';_pinCiblePage=name;_pinCallback=null;_pinEnCours='';
+document.getElementById('pin-title').textContent='🔒 Accès sécurisé';
+document.getElementById('pin-subtitle').textContent='Entre ton code PIN';
+document.getElementById('pin-erreur').textContent='';
+pinMajDots();openModal('modal-pin');
+}
+
+function demanderPin(cb){
+if(!localStorage.getItem(PIN_KEY))setPin('0007');
+_pinMode='verif';_pinCiblePage=null;_pinCallback=cb;_pinEnCours='';
+document.getElementById('pin-title').textContent='🔒 Action sécurisée';
+document.getElementById('pin-subtitle').textContent='Entre ton code PIN pour continuer';
+document.getElementById('pin-erreur').textContent='';
+pinMajDots();openModal('modal-pin');
+}
+
+function pinSaisir(c){
+if(_pinEnCours.length>=4)return;
+_pinEnCours+=c;pinMajDots();
+if(_pinEnCours.length===4)setTimeout(pinValider,150);
+}
+function pinEffacer(){_pinEnCours=_pinEnCours.slice(0,-1);pinMajDots();}
+function pinMajDots(){
+for(let i=0;i<4;i++){
+const d=document.getElementById('pin-dot-'+i);if(!d)continue;
+d.style.background=i<_pinEnCours.length?'var(--accent)':'transparent';
+d.style.borderColor=i<_pinEnCours.length?'var(--accent)':'var(--border)';
+}
+}
+function pinValider(){
+if(_pinMode==='verif'){
+if(_pinEnCours===getPin()){
+closeModal('modal-pin');
+if(_pinCallback){const cb=_pinCallback;_pinCallback=null;cb();}
+else if(_pinCiblePage==='__changement'){
+_pinEnCours='';_pinTemp='';_pinMode='def';
+document.getElementById('pin-title').textContent='Nouveau code PIN';
+document.getElementById('pin-subtitle').textContent='Choisis un nouveau code à 4 chiffres';
+document.getElementById('pin-erreur').textContent='';
+pinMajDots();openModal('modal-pin');
+}else if(_pinCiblePage){showPage(_pinCiblePage);}
+}else{
+document.getElementById('pin-erreur').textContent='❌ Code incorrect, réessaie';
+_pinEnCours='';pinMajDots();
+}
+}else if(_pinMode==='def'){
+_pinTemp=_pinEnCours;_pinEnCours='';_pinMode='conf';
+document.getElementById('pin-title').textContent='Confirmer le code PIN';
+document.getElementById('pin-subtitle').textContent='Saisis à nouveau le même code';
+document.getElementById('pin-erreur').textContent='';
+pinMajDots();openModal('modal-pin');
+}else if(_pinMode==='conf'){
+if(_pinEnCours===_pinTemp){
+setPin(_pinEnCours);closeModal('modal-pin');toast('✅ Nouveau code PIN enregistré');
+}else{
+document.getElementById('pin-erreur').textContent='❌ Codes différents, recommence';
+_pinEnCours='';_pinTemp='';_pinMode='def';
+document.getElementById('pin-title').textContent='Nouveau code PIN';
+document.getElementById('pin-subtitle').textContent='Choisis un nouveau code à 4 chiffres';
+pinMajDots();openModal('modal-pin');
+}
+}
+}
+function changerPin(){
+_pinCallback=null;_pinCiblePage='__changement';_pinEnCours='';_pinMode='verif';
+document.getElementById('pin-title').textContent='🔑 Changer le code PIN';
+document.getElementById('pin-subtitle').textContent='Entre ton code PIN actuel pour continuer';
+document.getElementById('pin-erreur').textContent='';
+pinMajDots();openModal('modal-pin');
+}
+
+// ================================================
+// HISTORIQUE — FILTRES DATE + NETTOYAGE
+// ================================================
+let _historiqueFiltrePeriode='tout';
+
+function filtrerHistoriqueDate(periode){
+_historiqueFiltrePeriode=periode;
+document.querySelectorAll('#history-periode-bar .cat-btn').forEach((el,i)=>{
+el.classList.toggle('active',['tout','aujourd','semaine','mois','perso'][i]===periode);
+});
+const persoEl=document.getElementById('history-perso-dates');
+if(persoEl)persoEl.style.display=periode==='perso'?'block':'none';
+renderHistory();
+}
+
+function getHistoryDateRange(){
+const now=new Date();const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+if(_historiqueFiltrePeriode==='tout')return{debut:0,fin:Infinity};
+if(_historiqueFiltrePeriode==='aujourd')return{debut:today.getTime(),fin:today.getTime()+86400000-1};
+if(_historiqueFiltrePeriode==='semaine'){const lundi=new Date(today);lundi.setDate(today.getDate()-((today.getDay()||7)-1));return{debut:lundi.getTime(),fin:Infinity};}
+if(_historiqueFiltrePeriode==='mois')return{debut:new Date(now.getFullYear(),now.getMonth(),1).getTime(),fin:Infinity};
+if(_historiqueFiltrePeriode==='perso'){
+const ds=document.getElementById('history-date-debut')?.value;const fs=document.getElementById('history-date-fin')?.value;
+return{debut:ds?new Date(ds).getTime():0,fin:fs?new Date(fs).getTime()+86400000-1:Infinity};
+}
+return{debut:0,fin:Infinity};
+}
+
+function setCleanDate(jours){
+const d=new Date();d.setDate(d.getDate()-jours);
+const str=d.toISOString().slice(0,10);
+document.getElementById('clean-history-date').value=str;
+const nb=db.historique.filter(h=>h.ts<new Date(str).getTime()).length;
+const el=document.getElementById('clean-history-count');
+if(el)el.textContent=nb>0?`⚠️ ${nb} transaction${nb>1?'s':''} sera${nb>1?'ont':''} supprimée${nb>1?'s':''}.`:'Aucune transaction à supprimer.';
+}
+
+function nettoyerHistoriqueSecure(){demanderPin(()=>nettoyerHistorique());}
+
+let _cleanHistoriqueDate=null;
+function nettoyerHistorique(){
+const dateStr=document.getElementById('clean-history-date').value;
+if(!dateStr){toast('❌ Choisis une date limite');return;}
+const limite=new Date(dateStr).getTime();
+const nb=db.historique.filter(h=>h.ts<limite).length;
+if(nb===0){toast('ℹ️ Aucune transaction avant cette date');return;}
+_cleanHistoriqueDate=limite;
+document.getElementById('confirm-clean-detail').innerHTML=`<strong>${nb} transaction${nb>1?'s':''}</strong> avant le <strong>${new Date(dateStr).toLocaleDateString('fr-FR')}</strong> sera${nb>1?'ont':''} supprimée${nb>1?'s':''} définitivement.`;
+openModal('modal-confirm-clean');
+}
+
+function confirmerNettoyage(){
+if(!_cleanHistoriqueDate)return;
+const avant=db.historique.length;
+db.historique=db.historique.filter(h=>h.ts>=_cleanHistoriqueDate);
+const supprimees=avant-db.historique.length;
+saveDB();closeModal('modal-confirm-clean');_cleanHistoriqueDate=null;
+document.getElementById('clean-history-date').value='';
+document.getElementById('clean-history-count').textContent='';
+renderHistory();toast(`✅ ${supprimees} transaction${supprimees>1?'s':''} supprimée${supprimees>1?'s':''}`);
+}
+
+// ================================================
+// STOCK — FILTRE CATÉGORIE
+// ================================================
+let _stockCatFiltre=null;
+
+function renderStockCatsBar(){
+const bar=document.getElementById('stock-cats-bar');if(!bar)return;
+let html=`<div class="cat-btn all ${_stockCatFiltre===null?'active':''}" onclick="filtrerStockCat(null)">Tout</div>`;
+db.categories.forEach(c=>{
+const nb=db.articles.filter(a=>a.categorieId===c.id).length;if(!nb)return;
+html+=`<div class="cat-btn ${_stockCatFiltre===c.id?'active':''}" onclick="filtrerStockCat('${c.id}')">${c.emoji} ${c.nom} <span style="opacity:0.6;font-size:11px">(${nb})</span></div>`;
+});
+const sans=db.articles.filter(a=>!a.categorieId).length;
+if(sans)html+=`<div class="cat-btn ${_stockCatFiltre==='__none'?'active':''}" onclick="filtrerStockCat('__none')">Autres (${sans})</div>`;
+bar.innerHTML=html;
+}
+function filtrerStockCat(catId){_stockCatFiltre=catId;renderStock();}
+
+// ================================================
+// COURSES — GRILLE PAR CATÉGORIE
+// ================================================
+let _coursesCatFiltre=null;
+
+function renderCoursesCatsBar(){
+const bar=document.getElementById('courses-cats-bar');if(!bar)return;
+const arts=db.articles.filter(a=>!a.type||a.type==='stock');
+let html=`<div class="cat-btn all ${_coursesCatFiltre===null?'active':''}" onclick="filtrerCoursesCat(null)">Tout</div>`;
+db.categories.forEach(c=>{
+if(!arts.filter(a=>a.categorieId===c.id).length)return;
+html+=`<div class="cat-btn ${_coursesCatFiltre===c.id?'active':''}" onclick="filtrerCoursesCat('${c.id}')">${c.emoji} ${c.nom}</div>`;
+});
+const sc=arts.filter(a=>!a.categorieId).length;
+if(sc)html+=`<div class="cat-btn ${_coursesCatFiltre==='__none'?'active':''}" onclick="filtrerCoursesCat('__none')">Autres</div>`;
+bar.innerHTML=html;
+}
+function filtrerCoursesCat(catId){_coursesCatFiltre=catId;renderCoursesCatsBar();renderCoursesGrid();}
+
+function renderCoursesGrid(){
+const grid=document.getElementById('courses-articles-grid');if(!grid)return;
+let arts=db.articles.filter(a=>!a.type||a.type==='stock');
+if(_coursesCatFiltre===null){}
+else if(_coursesCatFiltre==='__none')arts=arts.filter(a=>!a.categorieId);
+else arts=arts.filter(a=>a.categorieId===_coursesCatFiltre);
+if(!arts.length){grid.innerHTML='<div class="text-muted" style="font-size:12px;padding:12px;grid-column:1/-1">Aucun article</div>';return;}
+grid.innerHTML=arts.map(a=>{
+const ligne=coursesLines.find(l=>l.articleId===a.id);const qte=ligne?.qte||0;const inT=qte>0;
+return`<div onclick="coursesToggleArticle('${a.id}')" style="background:${inT?'var(--accent)':'var(--surface2)'};color:${inT?'#000':'var(--text)'};border:2px solid ${inT?'var(--accent)':'var(--border)'};border-radius:10px;padding:10px;cursor:pointer;text-align:center;position:relative;transition:all 0.12s;">
+${inT?`<div style="position:absolute;top:-8px;right:-8px;background:#000;color:var(--accent);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">+${qte}</div>`:''}
+<div style="font-weight:600;font-size:13px">${a.nom}</div>
+<div style="font-size:11px;opacity:0.7;margin-top:3px">Stock: ${a.qte||0}</div>
+</div>`;
+}).join('');
+}
+
+function coursesToggleArticle(articleId){
+let ligne=coursesLines.find(l=>l.articleId===articleId);
+if(!ligne)coursesLines.push({articleId,qte:1});else ligne.qte++;
+renderCoursesGrid();renderCoursesLines();
+}
+function coursesChangeQte(articleId,delta){
+const ligne=coursesLines.find(l=>l.articleId===articleId);if(!ligne)return;
+ligne.qte+=delta;if(ligne.qte<=0)coursesLines=coursesLines.filter(l=>l.articleId!==articleId);
+renderCoursesGrid();renderCoursesLines();
+}
+function coursesSupprLigne(articleId){
+coursesLines=coursesLines.filter(l=>l.articleId!==articleId);
+renderCoursesGrid();renderCoursesLines();
+}
 
 appliquerParams();
 renderDashboard();
