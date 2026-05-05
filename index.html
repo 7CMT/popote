@@ -1599,12 +1599,12 @@ const bar=document.getElementById('vente-cats-bar');
 if(!bar)return;
 let html=`<div class="cat-btn all ${_venteCatFiltre===null?'active':''}" onclick="filtrerCat(null)">Tout</div>`;
 db.categories.forEach(cat=>{
-const nbArt=db.articles.filter(a=>a.categorieId===cat.id&&a.qte>0).length;
+const nbArt=db.articles.filter(a=>a.categorieId===cat.id&&(a.type==='repas'||a.type==='prestation'||a.qte>0)).length;
 const nbForm=db.formules.filter(f=>f.categorieId===cat.id).length;
 if(nbArt===0&&nbForm===0)return;
 html+=`<div class="cat-btn ${_venteCatFiltre===cat.id?'active':''}" onclick="filtrerCat('${cat.id}')">${cat.emoji} ${cat.nom}</div>`;
 });
-const sansCat=db.articles.filter(a=>!a.categorieId&&a.qte>0).length+db.formules.filter(f=>!f.categorieId).length;
+const sansCat=db.articles.filter(a=>!a.categorieId&&(a.type==='repas'||a.type==='prestation'||a.qte>0)).length+db.formules.filter(f=>!f.categorieId).length;
 if(sansCat>0){
 html+=`<div class="cat-btn ${_venteCatFiltre==='__none'?'active':''}" onclick="filtrerCat('__none')">🏷️ Autres</div>`;
 }
