@@ -186,6 +186,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 <div class="page active" id="page-dashboard">
 <div id="alerts-zone"></div>
 <div class="grid-4 mb-16" id="dashboard-stats"></div>
+<div id="dettes-detail-zone"></div>
 <div class="grid-2">
 <div class="card"><div class="card-title">💰 Caisse & Compte</div><div id="caisse-summary"></div></div>
 <div class="card"><div class="card-title">📦 Stock valorisé</div><div id="stock-summary"></div></div>
@@ -985,15 +986,53 @@ return nouvellesCartes;
 // ================================================
 // DASHBOARD
 // ================================================
+let _dettesDetailOuvert=false;
+
+function toggleDettesDetail(){
+_dettesDetailOuvert=!_dettesDetailOuvert;
+const clientsEnDette=db.clients.filter(c=>c.dette>0).sort((a,b)=>b.dette-a.dette);
+renderDettesDetail(clientsEnDette);
+}
+
+function renderDettesDetail(clientsEnDette){
+const zone=document.getElementById('dettes-detail-zone');if(!zone)return;
+if(!_dettesDetailOuvert||!clientsEnDette.length){zone.innerHTML='';return;}
+zone.innerHTML=`<div class="card" style="margin-bottom:16px;border-color:var(--red)">
+<div class="card-title" style="color:var(--red);margin-bottom:12px">🔖 Clients en dette</div>
+${clientsEnDette.map(c=>{
+const grade=getGrade(c.grade);
+return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:8px;border:1px solid #5a2020;cursor:pointer" onclick="showPage('clients');setTimeout(()=>openClientDetail('${c.id}'),100)">
+<div>
+${grade?`<div style="font-size:11px;color:var(--accent);font-weight:700">${grade.abrev}</div>`:''}
+<div style="font-weight:600">${c.nom}</div>
+</div>
+<div style="display:flex;gap:10px;align-items:center">
+<span class="badge badge-red">${fmt(c.dette)}</span>
+<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();_currentClientId='${c.id}';openPaiementDette('${c.id}')">💳 Régler</button>
+</div>
+</div>`;
+}).join('')}
+</div>`;
+}
+
 function renderDashboard(){
 renderAlerts();
 const total=db.caisse.liquide+db.caisse.compte;
 let dettes=0;db.clients.forEach(c=>dettes+=c.dette||0);
+const clientsEnDette=db.clients.filter(c=>c.dette>0).sort((a,b)=>b.dette-a.dette);
 document.getElementById('dashboard-stats').innerHTML=`
 <div class="stat-box"><div class="stat-label">Total caisse</div><div class="stat-value yellow">${fmt(total)}</div></div>
 <div class="stat-box"><div class="stat-label">Espèces</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
 <div class="stat-box"><div class="stat-label">Compte CB</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
-<div class="stat-box"><div class="stat-label">Dettes clients</div><div class="stat-value red">${fmt(dettes)}</div></div>`;
+<div class="stat-box" style="cursor:pointer" onclick="toggleDettesDetail()">
+<div class="stat-label">Dettes clients ${clientsEnDette.length>0?`(${clientsEnDette.length})`:''}▾</div>
+<div class="stat-value red">${fmt(dettes)}</div>
+</div>`;
+
+// Afficher le détail dettes si déjà ouvert
+if(document.getElementById('dettes-detail-zone')){
+renderDettesDetail(clientsEnDette);
+}
 document.getElementById('caisse-summary').innerHTML=`
 <div class="grid-2">
 <div class="stat-box"><div class="stat-label">💵 Espèces</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
@@ -1416,6 +1455,10 @@ document.getElementById('new-cat-nom').value='';
 document.getElementById('new-cat-emoji').value='';
 renderCategoriesModal();
 updateCategorieSelects();
+renderVenteCatsBar();
+renderStockCatsBar();
+renderCoursesCatsBar();
+renderArticlesGrid();
 toast(`✅ Catégorie "${nom}" créée`);
 }
 
@@ -1426,7 +1469,12 @@ db.articles.forEach(a=>{if(a.categorieId===id)a.categorieId=null;});
 saveDB();
 renderCategoriesModal();
 updateCategorieSelects();
+renderVenteCatsBar();
+renderStockCatsBar();
+renderCoursesCatsBar();
 if(_venteCatFiltre===id)_venteCatFiltre=null;
+if(_stockCatFiltre===id)_stockCatFiltre=null;
+if(_coursesCatFiltre===id)_coursesCatFiltre=null;
 renderArticlesGrid();
 toast('✅ Catégorie supprimée');
 }
@@ -2106,11 +2154,53 @@ return`<div style="background:var(--surface2);border-radius:8px;padding:12px;mar
 </div>
 <div style="display:flex;gap:8px;align-items:center">
 <span style="font-family:var(--font-mono);font-weight:700;color:var(--accent)">${fmt(f.prix)}</span>
+<button class="btn btn-secondary btn-sm" onclick="editFormule('${f.id}')">✏️</button>
 <button class="btn btn-danger btn-sm" onclick="deleteFormule('${f.id}')">🗑️</button>
 </div>
 </div>
 </div>`;
 }).join('');
+}
+
+let _editFormuleId=null;
+
+function editFormule(id){
+const f=db.formules.find(x=>x.id===id);if(!f)return;
+_editFormuleId=id;
+// Remplir les champs avec les données existantes
+document.getElementById('nf-nom').value=f.nom;
+document.getElementById('nf-emoji').value=f.emoji||'🍽️';
+document.getElementById('nf-prix').value=f.prix;
+document.getElementById('nf-categorie').value=f.categorieId||'';
+// Charger les lignes
+nfLignes=f.articles.map(a=>({articleId:a.articleId,qte:a.qte}));
+renderNfLignes();
+// Changer le bouton de création en "Enregistrer"
+const btn=document.querySelector('#modal-formules .btn-primary');
+if(btn){btn.textContent='✓ Enregistrer les modifications';btn.onclick=()=>saveFormule();}
+toast('✏️ Modifie la formule puis clique Enregistrer');
+}
+
+function saveFormule(){
+const f=db.formules.find(x=>x.id===_editFormuleId);if(!f)return;
+const nom=document.getElementById('nf-nom').value.trim();
+const prix=parseFloat(document.getElementById('nf-prix').value);
+const emoji=document.getElementById('nf-emoji').value.trim()||'🍽️';
+const catId=document.getElementById('nf-categorie').value||null;
+if(!nom){toast('❌ Nom obligatoire');return;}
+if(isNaN(prix)||prix<=0){toast('❌ Prix invalide');return;}
+if(!nfLignes.length||nfLignes.some(l=>!l.articleId)){toast('❌ Ajoute au moins un article valide');return;}
+f.nom=nom;f.emoji=emoji;f.prix=prix;f.categorieId=catId;
+f.articles=nfLignes.map(l=>({articleId:l.articleId,qte:l.qte}));
+saveDB();
+// Réinitialiser le formulaire
+document.getElementById('nf-nom').value='';document.getElementById('nf-prix').value='';document.getElementById('nf-emoji').value='';
+nfLignes=[];renderNfLignes();_editFormuleId=null;
+// Remettre le bouton en mode création
+const btn=document.querySelector('#modal-formules .btn-primary');
+if(btn){btn.textContent='✓ Créer la formule';btn.onclick=()=>createFormule();}
+renderFormulesModal();renderArticlesGrid();
+toast('✅ Formule mise à jour');
 }
 
 function deleteFormule(id){
