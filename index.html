@@ -193,6 +193,42 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 </div>
 <div class="card"><div class="card-title">📊 Vue d'ensemble — Cartes & Stock</div><div id="argent-immobilise"></div></div>
 <div class="card"><div class="card-title">📋 Dernières transactions</div><div id="recent-history"></div></div>
+<div class="card">
+<div class="flex-between" style="margin-bottom:14px">
+<div class="card-title" style="margin:0">🏆 Top consommateurs carte Popote</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary btn-sm" id="top-periode-mois" onclick="setTopPeriode('mois')" style="background:var(--accent);color:#000">Ce mois</button>
+<button class="btn btn-secondary btn-sm" id="top-periode-annee" onclick="setTopPeriode('annee')">Cette année</button>
+</div>
+</div>
+<div id="top-clients-zone"></div>
+</div>
+<div class="card">
+<div class="flex-between" style="margin-bottom:14px">
+<div class="card-title" style="margin:0">📈 Bénéfice estimé</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary btn-sm" id="benef-periode-jour" onclick="setBenefPeriode('jour')">Aujourd'hui</button>
+<button class="btn btn-secondary btn-sm" id="benef-periode-mois" onclick="setBenefPeriode('mois')" style="background:var(--accent);color:#000">Ce mois</button>
+<button class="btn btn-secondary btn-sm" id="benef-periode-annee" onclick="setBenefPeriode('annee')">Cette année</button>
+</div>
+</div>
+<div id="benef-zone"></div>
+<div style="font-size:11px;color:var(--text2);margin-top:8px">⚠️ Estimation basée sur la marge achat/vente des articles vendus. Pour les repas, entre ton coût moyen ci-dessous.</div>
+<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap">
+<label class="form-label" style="margin:0;white-space:nowrap">Coût moyen d'un repas (€)</label>
+<input class="form-input" type="number" id="cout-repas-input" style="width:100px" step="0.10" placeholder="1.50" oninput="renderBenef()">
+</div>
+</div>
+<div class="card">
+<div class="flex-between" style="margin-bottom:14px">
+<div class="card-title" style="margin:0">🥇 Top articles vendus</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary btn-sm" id="top-art-mois" onclick="setTopArtPeriode('mois')" style="background:var(--accent);color:#000">Ce mois</button>
+<button class="btn btn-secondary btn-sm" id="top-art-annee" onclick="setTopArtPeriode('annee')">Cette année</button>
+</div>
+</div>
+<div id="top-articles-zone"></div>
+</div>
 </div>
 
 <!-- CLIENTS -->
@@ -299,7 +335,7 @@ Appuie pour ajouter au ticket ↓
 </div>
 </div>
 <div style="display:flex;align-items:flex-end">
-<button class="btn btn-green" onclick="rentreeCaisse()" style="width:100%;justify-content:center">📥 Enregistrer la rentrée</button>
+<button class="btn btn-green" onclick="rentreeCaisseSecure()" style="width:100%;justify-content:center">📥 Enregistrer la rentrée 🔒</button>
 </div>
 </div>
 </div>
@@ -317,7 +353,7 @@ Appuie pour ajouter au ticket ↓
 </div>
 </div>
 <div style="display:flex;align-items:flex-end">
-<button class="btn btn-danger" onclick="sortieCaisse()" style="width:100%;justify-content:center">📤 Enregistrer</button>
+<button class="btn btn-danger" onclick="sortieCaisseSecure()" style="width:100%;justify-content:center">📤 Enregistrer 🔒</button>
 </div>
 </div>
 </div>
@@ -715,7 +751,7 @@ Appuie pour ajouter au ticket ↓
 <div class="cats-bar" id="choix-boisson-cats" style="margin-bottom:10px"></div>
 <!-- Grille articles -->
 <div id="choix-boisson-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;max-height:260px;overflow-y:auto;margin-bottom:12px"></div>
-<div class="alert alert-blue" style="font-size:12px;margin-bottom:12px" id="choix-boisson-supplement"></div>
+<div class="alert alert-blue" style="font-size:12px;margin-bottom:12px;display:none" id="choix-boisson-supplement"></div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="annulerChoixBoisson()">Annuler</button>
 <button class="btn btn-secondary" onclick="validerChoixBoisson(null)">Sans article</button>
@@ -1047,6 +1083,9 @@ document.getElementById('stock-summary').innerHTML=`
 renderArgentImmobilise();
 const recent=[...db.historique].reverse().slice(0,8);
 document.getElementById('recent-history').innerHTML=recent.length?recent.map(histHTML).join(''):'<div class="text-muted" style="padding:16px;text-align:center">Aucune transaction</div>';
+renderTopClients();
+renderBenef();
+renderTopArticles();
 }
 
 function renderArgentImmobilise(){
@@ -2899,6 +2938,156 @@ renderCoursesGrid();renderCoursesLines();
 function coursesSupprLigne(articleId){
 coursesLines=coursesLines.filter(l=>l.articleId!==articleId);
 renderCoursesGrid();renderCoursesLines();
+}
+
+// ================================================
+// PIN CAISSE — RENTRÉES ET SORTIES
+// ================================================
+function rentreeCaisseSecure(){demanderPin(()=>rentreeCaisse());}
+function sortieCaisseSecure(){demanderPin(()=>sortieCaisse());}
+
+// ================================================
+// TOP CONSOMMATEURS CARTE POPOTE
+// ================================================
+let _topPeriode='mois';
+
+function setTopPeriode(periode){
+_topPeriode=periode;
+document.getElementById('top-periode-mois').style.cssText=periode==='mois'?'background:var(--accent);color:#000':'';
+document.getElementById('top-periode-annee').style.cssText=periode==='annee'?'background:var(--accent);color:#000':'';
+renderTopClients();
+}
+
+function getDebutPeriode(periode){
+const now=new Date();
+if(periode==='mois')return new Date(now.getFullYear(),now.getMonth(),1).getTime();
+if(periode==='annee')return new Date(now.getFullYear(),0,1).getTime();
+if(periode==='jour')return new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+return 0;
+}
+
+function renderTopClients(){
+const zone=document.getElementById('top-clients-zone');if(!zone)return;
+const debut=getDebutPeriode(_topPeriode);
+// Calculer la conso carte popote par client sur la période
+const conso={};
+db.historique.filter(h=>h.ts>=debut&&h.type==='vente'&&h.paiement==='carte_popote'&&h.clientId).forEach(h=>{
+conso[h.clientId]=(conso[h.clientId]||0)+h.montant;
+});
+const top=Object.entries(conso)
+.map(([id,total])=>({client:db.clients.find(c=>c.id===id),total}))
+.filter(x=>x.client)
+.sort((a,b)=>b.total-a.total)
+.slice(0,3);
+if(!top.length){zone.innerHTML='<div class="text-muted" style="text-align:center;padding:16px;font-size:13px">Aucune vente carte Popote sur cette période</div>';return;}
+const medals=['🥇','🥈','🥉'];
+zone.innerHTML=top.map((x,i)=>{
+const grade=getGrade(x.client.grade);
+const pct=top[0].total>0?Math.round(x.total/top[0].total*100):0;
+return`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:10px;margin-bottom:8px">
+<div style="font-size:28px">${medals[i]}</div>
+<div style="flex:1">
+${grade?`<div style="font-size:11px;color:var(--accent);font-weight:700">${grade.abrev}</div>`:''}
+<div style="font-weight:700">${x.client.nom}</div>
+<div style="background:var(--surface3);border-radius:4px;height:6px;margin-top:6px">
+<div style="background:var(--accent);height:6px;border-radius:4px;width:${pct}%"></div>
+</div>
+</div>
+<div style="font-family:var(--font-mono);font-weight:800;color:var(--accent);font-size:16px">${fmt(x.total)}</div>
+</div>`;
+}).join('');
+}
+
+// ================================================
+// BÉNÉFICE ESTIMÉ
+// ================================================
+let _benefPeriode='mois';
+
+function setBenefPeriode(periode){
+_benefPeriode=periode;
+['jour','mois','annee'].forEach(p=>{
+const el=document.getElementById('benef-periode-'+p);
+if(el)el.style.cssText=p===periode?'background:var(--accent);color:#000':'';
+});
+renderBenef();
+}
+
+function renderBenef(){
+const zone=document.getElementById('benef-zone');if(!zone)return;
+const debut=getDebutPeriode(_benefPeriode);
+const coutRepas=parseFloat(document.getElementById('cout-repas-input')?.value)||0;
+
+let benefArticles=0,benefRepas=0,nbRepas=0,chiffreAffaires=0;
+
+db.historique.filter(h=>h.ts>=debut&&h.type==='vente').forEach(h=>{
+chiffreAffaires+=h.montant;
+// Calculer la marge sur les articles vendus
+if(h.articles){
+h.articles.split(', ').forEach(ligne=>{
+const match=ligne.match(/^(\d+)×\s(.+)$/);
+if(!match)return;
+const qte=parseInt(match[1]);const nom=match[2].replace('🥘 ','').replace(' (incluse)','');
+const art=db.articles.find(a=>a.nom===nom||`🥘 ${a.nom}`===nom);
+if(art&&art.type==='stock'){benefArticles+=(art.prixVente-art.prixAchat)*qte;}
+if(art&&art.type==='repas'){nbRepas+=qte;benefRepas+=(art.prixVente-coutRepas)*qte;}
+});
+}
+});
+
+const benefTotal=benefArticles+benefRepas;
+zone.innerHTML=`
+<div class="grid-3" style="margin-bottom:12px">
+<div class="stat-box"><div class="stat-label">Chiffre d'affaires</div><div class="stat-value blue">${fmt(chiffreAffaires)}</div></div>
+<div class="stat-box"><div class="stat-label">Marge articles</div><div class="stat-value green">${fmt(benefArticles)}</div></div>
+<div class="stat-box" style="border-color:var(--accent)"><div class="stat-label">Bénéfice total estimé</div><div class="stat-value yellow">${fmt(benefTotal)}</div></div>
+</div>
+${nbRepas>0?`<div style="font-size:12px;color:var(--text2);padding:8px 12px;background:var(--surface2);border-radius:8px">🥘 ${nbRepas} repas vendus · Marge repas : <strong style="color:var(--green)">${fmt(benefRepas)}</strong> (coût estimé ${fmt(coutRepas)}/repas)</div>`:''}`;
+}
+
+// ================================================
+// TOP ARTICLES VENDUS
+// ================================================
+let _topArtPeriode='mois';
+
+function setTopArtPeriode(periode){
+_topArtPeriode=periode;
+document.getElementById('top-art-mois').style.cssText=periode==='mois'?'background:var(--accent);color:#000':'';
+document.getElementById('top-art-annee').style.cssText=periode==='annee'?'background:var(--accent);color:#000':'';
+renderTopArticles();
+}
+
+function renderTopArticles(){
+const zone=document.getElementById('top-articles-zone');if(!zone)return;
+const debut=getDebutPeriode(_topArtPeriode);
+const counts={};
+db.historique.filter(h=>h.ts>=debut&&h.type==='vente'&&h.articles).forEach(h=>{
+h.articles.split(', ').forEach(ligne=>{
+const match=ligne.match(/^(\d+)×\s(.+)$/);
+if(!match)return;
+const qte=parseInt(match[1]);const nom=match[2];
+counts[nom]=(counts[nom]||0)+qte;
+});
+});
+const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+if(!top.length){zone.innerHTML='<div class="text-muted" style="text-align:center;padding:16px;font-size:13px">Aucune vente sur cette période</div>';return;}
+const max=top[0][1];
+zone.innerHTML=top.map(([nom,qte],i)=>{
+const pct=Math.round(qte/max*100);
+const art=db.articles.find(a=>a.nom===nom||`🥘 ${a.nom}`===nom||nom.includes(a.nom));
+const ca=art?(qte*art.prixVente):0;
+return`<div style="padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:8px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+<div style="font-weight:600;font-size:13px">${i+1}. ${nom}</div>
+<div style="display:flex;gap:10px;font-family:var(--font-mono);font-size:12px">
+<span style="color:var(--text2)">${qte} vendu${qte>1?'s':''}</span>
+${ca>0?`<span style="color:var(--accent)">${fmt(ca)}</span>`:''}
+</div>
+</div>
+<div style="background:var(--surface3);border-radius:4px;height:5px">
+<div style="background:var(--accent);height:5px;border-radius:4px;width:${pct}%"></div>
+</div>
+</div>`;
+}).join('');
 }
 
 appliquerParams();
