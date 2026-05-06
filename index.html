@@ -1796,11 +1796,11 @@ openModal('modal-choix-boisson');
 function renderChoixBoissonCats(){
 const bar=document.getElementById('choix-boisson-cats');
 if(!bar)return;
-// Articles en stock disponibles (type stock)
-const articlesDispos=db.articles.filter(a=>a.type==='stock'&&a.qte>0);
-const gradesPrésents=[...new Set(articlesDispos.map(a=>a.categorieId).filter(Boolean))];
+// Tous les articles de type stock (même ceux à 0)
+const articlesDispos=db.articles.filter(a=>!a.type||a.type==='stock');
+const catIds=[...new Set(articlesDispos.map(a=>a.categorieId).filter(Boolean))];
 let html=`<div class="cat-btn all ${_boissonCatFiltre===null?'active':''}" onclick="filtrerBoissonCat(null)">Tout</div>`;
-db.categories.filter(c=>gradesPrésents.includes(c.id)).forEach(c=>{
+db.categories.filter(c=>catIds.includes(c.id)).forEach(c=>{
 html+=`<div class="cat-btn ${_boissonCatFiltre===c.id?'active':''}" onclick="filtrerBoissonCat('${c.id}')">${c.emoji} ${c.nom}</div>`;
 });
 const sansCat=articlesDispos.filter(a=>!a.categorieId).length;
@@ -1818,34 +1818,34 @@ renderChoixBoissonGrid();
 
 function renderChoixBoissonGrid(){
 const plafond=_repasEnCours?.plafondBoisson||0.75;
-let articles=db.articles.filter(a=>a.type==='stock'&&a.qte>0);
-if(_boissonCatFiltre===null){
-// tout
-}else if(_boissonCatFiltre==='__none'){
-articles=articles.filter(a=>!a.categorieId);
-}else{
-articles=articles.filter(a=>a.categorieId===_boissonCatFiltre);
-}
+// Tous les articles de type stock, même ceux à 0
+let articles=db.articles.filter(a=>!a.type||a.type==='stock');
+if(_boissonCatFiltre===null){}
+else if(_boissonCatFiltre==='__none')articles=articles.filter(a=>!a.categorieId);
+else articles=articles.filter(a=>a.categorieId===_boissonCatFiltre);
 const grid=document.getElementById('choix-boisson-grid');
 if(!articles.length){
-grid.innerHTML='<div class="text-muted" style="padding:16px;text-align:center;grid-column:1/-1">Aucun article dans cette catégorie</div>';
+grid.innerHTML='<div class="text-muted" style="padding:16px;text-align:center;grid-column:1/-1">Aucun article disponible</div>';
 return;
 }
 grid.innerHTML=articles.map(b=>{
 const supplement=Math.max(0,Math.round((b.prixVente-plafond)*100)/100);
 const isSelected=_boissonSelectee===b.id;
-return`<div onclick="selectionnerBoisson('${b.id}')" id="boisson-btn-${b.id}" style="
-background:${isSelected?'var(--accent)':'var(--surface2)'};
-color:${isSelected?'#000':'var(--text)'};
-border:2px solid ${isSelected?'var(--accent)':'var(--border)'};
-border-radius:10px;padding:10px;cursor:pointer;text-align:center;transition:all 0.12s;">
+const rupture=b.qte<=0;
+return`<div onclick="${rupture?'':` selectionnerBoisson('${b.id}')`}" style="
+background:${isSelected?'var(--accent)':rupture?'var(--surface3)':'var(--surface2)'};
+color:${isSelected?'#000':rupture?'var(--text2)':'var(--text)'};
+border:2px solid ${isSelected?'var(--accent)':rupture?'var(--border)':'var(--border)'};
+border-radius:10px;padding:10px;cursor:${rupture?'not-allowed':'pointer'};text-align:center;transition:all 0.12s;opacity:${rupture?'0.5':'1'}">
 <div style="font-weight:600;font-size:13px">${b.nom}</div>
 <div style="font-size:12px;font-family:var(--font-mono);margin-top:3px">${fmt(b.prixVente)}</div>
-${supplement>0
+${rupture
+?`<div style="font-size:10px;color:var(--red);margin-top:3px">❌ Rupture</div>`
+:supplement>0
 ?`<div style="font-size:10px;color:${isSelected?'#700':'var(--red)'};margin-top:3px">+${fmt(supplement)}</div>`
 :`<div style="font-size:10px;color:${isSelected?'#050':'var(--green)'};margin-top:3px">✅ Inclus</div>`
 }
-<div style="font-size:10px;opacity:0.6;margin-top:1px">Stock: ${b.qte}</div>
+<div style="font-size:10px;opacity:0.6;margin-top:1px">Stock: ${b.qte||0}</div>
 </div>`;
 }).join('');
 }
