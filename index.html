@@ -1383,6 +1383,7 @@ openModal('modal-client-detail');
 }
 
 function toggleCase(clientId,carteId,idx){
+demanderPin(()=>{
 const client=db.clients.find(c=>c.id===clientId);
 const carte=client?.cartes.find(c=>c.id===carteId);
 if(!carte||carte.statut!=='active')return;
@@ -1392,6 +1393,7 @@ carte.statut='soldee';
 activerCarteEnAttente(client);
 }
 saveDB();openClientDetail(clientId);
+});
 }
 
 // Passe automatiquement la carte "en_attente" la plus ancienne en "active" si aucune carte active
