@@ -938,6 +938,52 @@ Appuie pour ajouter au ticket ↓
 </div>
 </div>
 
+<!-- Débordement carte Popote -->
+
+<div class="modal-overlay" id="modal-debord-carte">
+<div class="modal" style="max-width:420px">
+<div style="font-size:36px;text-align:center;margin-bottom:8px">🍲</div>
+<div class="modal-title" style="justify-content:center">Carte Popote insuffisante</div>
+<div id="debord-detail"></div>
+
+<!-- Option 1 : payer le restant séparément -->
+
+<div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid var(--border)">
+  <div style="font-weight:700;font-size:13px;margin-bottom:10px">Option 1 — Payer le restant séparément</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px" id="debord-paiement-btns">
+    <div class="paiement-card" onclick="selectDebordPaiement('espece')" data-mode="espece">
+      <div class="pc-icon">💵</div><div class="pc-label">Espèces</div>
+    </div>
+    <div class="paiement-card" onclick="selectDebordPaiement('carte')" data-mode="carte">
+      <div class="pc-icon">💳</div><div class="pc-label">Carte CB</div>
+    </div>
+  </div>
+  <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="validerDebordPaiementSepare()">✓ Valider</button>
+</div>
+
+<!-- Option 2 : ouvrir nouvelle carte -->
+
+<div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid var(--border)">
+  <div style="font-weight:700;font-size:13px;margin-bottom:10px">Option 2 — Ouvrir une nouvelle carte Popote</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px" id="debord-nouvelle-carte-btns">
+    <div class="paiement-card" onclick="selectDebordNouvelleCarte('espece')" data-mode="espece">
+      <div class="pc-icon">💵</div><div class="pc-label" style="font-size:11px">Espèces</div>
+    </div>
+    <div class="paiement-card" onclick="selectDebordNouvelleCarte('carte')" data-mode="carte">
+      <div class="pc-icon">💳</div><div class="pc-label" style="font-size:11px">Carte CB</div>
+    </div>
+    <div class="paiement-card" onclick="selectDebordNouvelleCarte('dette')" data-mode="dette">
+      <div class="pc-icon">🔖</div><div class="pc-label" style="font-size:11px">À dette</div>
+    </div>
+  </div>
+  <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="validerDebordNouvelleCarteChoix()">🍲 Ouvrir et continuer</button>
+</div>
+
+<button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="closeModal('modal-debord-carte');_debordEnCours=null;">Annuler</button>
+
+</div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -1890,112 +1936,92 @@ supEl.style.display='block';
 function annulerChoixBoisson(){
 _repasEnCours=null;_boissonSelectee=null;
 closeModal('modal-choix-boisson');
+// Pas de décompte stock car on annule
 }
-
-let _supplBoissonEnCours=null; // { boisson, supplement, repas }
-let _supplPaiement=null;
 
 function validerChoixBoisson(boissonId){
 if(!_repasEnCours)return;
 const repas=_repasEnCours;
 const plafond=repas.plafondBoisson||0.75;
 
-// Ajouter le repas au ticket
-const repasId=repas.id;
-if(venteArticles[repasId])venteArticles[repasId].qte++;
-else venteArticles[repasId]={nom:`🥘 ${repas.nom}`,prixVente:repas.prixVente,prixAchat:repas.prixAchat,qte:1,isPrestation:true,isRepas:true};
-
-if(boissonId){
-const boisson=db.articles.find(a=>a.id===boissonId);
-if(boisson&&boisson.qte>0){
-// Décrémenter le stock immédiatement
-boisson.qte--;
-saveDB();
-
-const supplement=Math.max(0,Math.round((boisson.prixVente-plafond)*100)/100);
-
-// Ajouter une ligne boisson gratuite au ticket (juste pour info)
-const boissonLigneId='boisson_'+boissonId+'_'+Date.now();
-venteArticles[boissonLigneId]={
-nom:`🥤 ${boisson.nom} (incluse)`,
-prixVente:0,prixAchat:boisson.prixAchat,
-qte:1,isBoissonIncluse:true,stockDejaDecompte:true
+// Clé unique pour ce repas précis (pas regroupé avec d'autres repas)
+const repasKey='repas_'+Date.now();
+venteArticles[repasKey]={
+  nom:`🥘 ${repas.nom}`,
+  prixVente:repas.prixVente,prixAchat:repas.prixAchat,
+  qte:1,isPrestation:true,isRepas:true,
+  repasArticleId:repas.id,
+  boissonKey:null,supplKey:null
 };
 
+if(boissonId){
+  const boisson=db.articles.find(a=>a.id===boissonId);
+  if(boisson){
+    const supplement=Math.max(0,Math.round((boisson.prixVente-plafond)*100)/100);
+    const boissonLigneId='boisson_'+Date.now();
+    venteArticles[boissonLigneId]={
+      nom:`🥤 ${boisson.nom} (incluse)`,
+      prixVente:0,prixAchat:boisson.prixAchat,
+      qte:1,isBoissonIncluse:true,
+      boissonArticleId:boissonId,
+      stockDejaDecompte:false
+    };
+    // Lier boisson → repas
+    venteArticles[repasKey].boissonKey=boissonLigneId;
+
+    if(supplement>0){
+      const supplId='suppl_'+Date.now();
+      venteArticles[supplId]={
+        nom:`↑ Supplément ${boisson.nom}`,
+        prixVente:supplement,prixAchat:0,
+        qte:1,isSupplBoisson:true,supplMode:null
+      };
+      // Lier supplément → repas
+      venteArticles[repasKey].supplKey=supplId;
+      toast(`ℹ️ Supplément de ${fmt(supplement)} ajouté au ticket`);
+    }
+  }
+}
+
 closeModal('modal-choix-boisson');
 _repasEnCours=null;_boissonSelectee=null;
-
-if(supplement>0){
-// Ouvrir modal supplément
-_supplBoissonEnCours={boisson,supplement,repasNom:repas.nom};
-_supplPaiement=null;
-document.getElementById('suppl-boisson-detail').innerHTML=`
-<div style="font-size:16px;font-weight:700;margin-bottom:6px">${boisson.nom}</div>
-<div style="margin-bottom:4px">Prix boisson : <span class="mono">${fmt(boisson.prixVente)}</span></div>
-<div style="margin-bottom:4px">Plafond inclus : <span class="mono text-green">− ${fmt(plafond)}</span></div>
-<div style="font-size:20px;font-weight:800;color:var(--accent);margin-top:10px">Supplément : ${fmt(supplement)}</div>`;
-document.querySelectorAll('#suppl-paiement-btns .paiement-card').forEach(el=>el.classList.remove('selected'));
-openModal('modal-suppl-boisson');
-}else{
-renderArticlesGrid();renderTicket();
-}
-return;
-}
-}
-
-closeModal('modal-choix-boisson');
-_repasEnCours=null;_boissonSelectee=null;
 renderArticlesGrid();renderTicket();
 }
 
-function selectSupplPaiement(mode){
-_supplPaiement=mode;
-document.querySelectorAll('#suppl-paiement-btns .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));
-}
+let _supplBoissonEnCours=null;
+let _supplPaiement=null;
+function selectSupplPaiement(mode){_supplPaiement=mode;document.querySelectorAll('#suppl-paiement-btns .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));}
+function annulerSupplBoisson(){_supplBoissonEnCours=null;_supplPaiement=null;closeModal('modal-suppl-boisson');renderArticlesGrid();renderTicket();}
+function validerSupplBoisson(){}
 
-function annulerSupplBoisson(){
-// Pas de supplément, on ferme juste
-_supplBoissonEnCours=null;_supplPaiement=null;
-closeModal('modal-suppl-boisson');
-renderArticlesGrid();renderTicket();
-toast('ℹ️ Supplément non encaissé');
-}
-
-function validerSupplBoisson(){
-if(!_supplBoissonEnCours){closeModal('modal-suppl-boisson');return;}
-if(!_supplPaiement){toast('❌ Choisis un mode de paiement');return;}
-
-const {boisson,supplement,repasNom}=_supplBoissonEnCours;
-const clientId=_venteClientId;
-const client=clientId?db.clients.find(c=>c.id===clientId):null;
-const nomLabel=client?client.nom:'Vente libre';
-
-if(_supplPaiement==='carte_popote'){
-if(!client){toast('❌ Sélectionne un client pour la carte Popote');return;}
-const ca=client.cartes.find(c=>c.statut==='active');
-if(!ca){toast('❌ Ce client n\'a pas de carte active');return;}
-cocherCases(client,supplement);
-addHistorique({type:'vente',label:`Supplément boisson — ${nomLabel}`,montant:supplement,paiement:'carte_popote',clientId,note:`${boisson.nom} avec ${repasNom}`});
-}else if(_supplPaiement==='espece'){
-db.caisse.liquide+=supplement;
-addHistorique({type:'vente',label:`Supplément boisson — ${nomLabel}`,montant:supplement,paiement:'espece',clientId,note:`${boisson.nom} avec ${repasNom}`});
-}else{
-db.caisse.compte+=supplement;
-addHistorique({type:'vente',label:`Supplément boisson — ${nomLabel}`,montant:supplement,paiement:'carte',clientId,note:`${boisson.nom} avec ${repasNom}`});
-}
-
-saveDB();
-_supplBoissonEnCours=null;_supplPaiement=null;
-closeModal('modal-suppl-boisson');
-renderArticlesGrid();renderTicket();
-toast(`✅ Supplément de ${fmt(supplement)} encaissé`);
+function setSupplMode(id,mode){
+  if(venteArticles[id])venteArticles[id].supplMode=mode;
+  renderTicket();
 }
 
 function venteChangeQte(articleId,delta){
-if(!venteArticles[articleId])return;
-venteArticles[articleId].qte+=delta;
-if(venteArticles[articleId].qte<=0)delete venteArticles[articleId];
-renderArticlesGrid();renderTicket();
+  if(!venteArticles[articleId])return;
+  const v=venteArticles[articleId];
+
+  if(v.isRepas){
+    if(delta<0){
+      // Supprimer ce repas précis + sa boisson + son supplément liés
+      if(v.boissonKey)delete venteArticles[v.boissonKey];
+      if(v.supplKey)delete venteArticles[v.supplKey];
+      delete venteArticles[articleId];
+    }else{
+      // +1 → ouvrir modal boisson pour un nouveau repas
+      const art=db.articles.find(a=>a.id===v.repasArticleId);
+      if(art){_repasEnCours=art;_boissonSelectee=null;ouvrirChoixBoisson(art);}
+    }
+    renderArticlesGrid();renderTicket();
+    return;
+  }
+
+  // Article normal
+  v.qte+=delta;
+  if(v.qte<=0)delete venteArticles[articleId];
+  renderArticlesGrid();renderTicket();
 }
 
 function selectVentePaiement(mode){
@@ -2020,14 +2046,35 @@ totalEl.innerHTML='';paiEl.innerHTML='';valEl.innerHTML='';return;
 const total=lines.reduce((s,[,v])=>s+v.qte*v.prixVente,0);
 
 linesEl.innerHTML=lines.map(([id,v])=>`
-<div class="ticket-line">
-<div class="ticket-line-left"><div class="ticket-line-nom">${v.nom}</div></div>
-<div class="ticket-line-qty">
-<button class="qty-btn" onclick="venteChangeQte('${id}',-1)">−</button>
-<span class="mono" style="min-width:22px;text-align:center;font-weight:700">${v.qte}</span>
-<button class="qty-btn" onclick="venteChangeQte('${id}',1)">+</button>
-</div>
-<div class="ticket-line-prix">${fmt(v.qte*v.prixVente)}</div>
+<div class="ticket-line" style="${v.isSupplBoisson?'flex-direction:column;align-items:flex-start;border-bottom:1px solid var(--border);padding-bottom:10px':''}">
+  <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+    <div class="ticket-line-left">
+      <div class="ticket-line-nom" style="${v.isSupplBoisson?'color:var(--accent)':''}">${v.nom}</div>
+    </div>
+    <div class="ticket-line-qty">
+      ${!v.isBoissonIncluse&&!v.isSupplBoisson?`
+      <button class="qty-btn" onclick="venteChangeQte('${id}',-1)">−</button>
+      <span class="mono" style="min-width:22px;text-align:center;font-weight:700">${v.qte}</span>
+      <button class="qty-btn" onclick="venteChangeQte('${id}',1)">+</button>
+      `:''}
+    </div>
+    <div class="ticket-line-prix">${fmt(v.qte*v.prixVente)}</div>
+  </div>
+  ${v.isSupplBoisson?`
+  <div style="width:100%;margin-top:8px">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">Comment encaisser ce supplément ?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+      <button onclick="setSupplMode('${id}','carte_popote')" style="padding:10px 6px;border-radius:8px;border:2px solid ${v.supplMode==='carte_popote'?'var(--accent)':'var(--border)'};background:${v.supplMode==='carte_popote'?'var(--accent)':'var(--surface3)'};color:${v.supplMode==='carte_popote'?'#000':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;text-align:center">
+        🍲<br>Carte
+      </button>
+      <button onclick="setSupplMode('${id}','espece')" style="padding:10px 6px;border-radius:8px;border:2px solid ${v.supplMode==='espece'?'var(--accent)':'var(--border)'};background:${v.supplMode==='espece'?'var(--accent)':'var(--surface3)'};color:${v.supplMode==='espece'?'#000':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;text-align:center">
+        💵<br>Espèces
+      </button>
+      <button onclick="setSupplMode('${id}','carte')" style="padding:10px 6px;border-radius:8px;border:2px solid ${v.supplMode==='carte'?'var(--accent)':'var(--border)'};background:${v.supplMode==='carte'?'var(--accent)':'var(--surface3)'};color:${v.supplMode==='carte'?'#000':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;text-align:center">
+        💳<br>CB
+      </button>
+    </div>
+  </div>`:''}
 </div>`).join('');
 
 totalEl.innerHTML=`<div class="ticket-total"><div class="ticket-total-label">Total à payer</div><div class="ticket-total-value">${fmt(total)}</div></div>`;
@@ -2080,44 +2127,161 @@ if(!lines.length){toast('❌ Ajoute des articles');return;}
 if(!_ventePaiement){toast('❌ Choisis un mode de paiement');return;}
 if(_ventePaiement==='carte_popote'&&!clientId){toast('❌ Sélectionne un client pour payer par carte Popote');return;}
 
+// Vérifier que les suppléments ont un mode de paiement
+const supplSansMode=lines.filter(([,v])=>v.isSupplBoisson&&!v.supplMode);
+if(supplSansMode.length){toast('❌ Choisis un mode de paiement pour le supplément boisson (🍲 Carte / 💵 Espèces / 💳 CB)');return;}
+
 const client=clientId?db.clients.find(c=>c.id===clientId):null;
+// Total hors suppléments (les suppléments sont encaissés séparément)
+const totalSansSuppl=Math.round(lines.filter(([,v])=>!v.isSupplBoisson).reduce((s,[,v])=>s+v.qte*v.prixVente,0)*100)/100;
 const total=Math.round(lines.reduce((s,[,v])=>s+v.qte*v.prixVente,0)*100)/100;
-const articlesLabel=lines.map(([,v])=>`${v.qte}× ${v.nom}`).join(', ');
+const articlesLabel=lines.filter(([,v])=>!v.isBoissonIncluse&&!v.isSupplBoisson).map(([,v])=>`${v.qte}× ${v.nom}`).join(', ');
 const nomLabel=client?client.nom:'Vente libre';
 
 if(_ventePaiement==='carte_popote'){
-const ca=client.cartes.find(c=>c.statut==='active');
-if(!ca){toast('❌ Ce client n\'a pas de carte active');return;}
-const nouvellesCartes=cocherCases(client,total);
-addHistorique({type:'vente',label:`Vente carte — ${nomLabel}`,montant:total,paiement:'carte_popote',clientId:clientId||null,articles:articlesLabel,
-note:nouvellesCartes.length?`Débord: nouvelle carte à dette (${fmt(client.dette)} de dette)`:''});
-if(nouvellesCartes.length)toast(`✅ Vente OK — nouvelle carte ouverte à dette (${fmt(client.dette)})`);
-else toast(`✅ ${fmt(total)} sur carte Popote`);
+  const ca=client.cartes.find(c=>c.statut==='active');
+  if(!ca){toast('❌ Ce client n\'a pas de carte active');return;}
+  const libres=carteCasesLibres(ca);
+  const casesNecessaires=Math.round(totalSansSuppl/CASE_VAL);
+
+  if(casesNecessaires>libres){
+    const montantCarte=libres*CASE_VAL;
+    const montantRestant=Math.round((totalSansSuppl-montantCarte)*100)/100;
+    _debordEnCours={client,ca,montantCarte,montantRestant,total:totalSansSuppl,articlesLabel,nomLabel,clientId};
+    ouvrirModalDebord(montantCarte,montantRestant);
+    return;
+  }
+  cocherCasesSimple(client,ca,casesNecessaires);
+  addHistorique({type:'vente',label:`Vente carte — ${nomLabel}`,montant:totalSansSuppl,paiement:'carte_popote',clientId:clientId||null,articles:articlesLabel});
+  toast(`✅ ${fmt(totalSansSuppl)} sur carte Popote`);
 }else if(_ventePaiement==='espece'){
-db.caisse.liquide+=total;
-addHistorique({type:'vente',label:`Vente espèces — ${nomLabel}`,montant:total,paiement:'espece',clientId:clientId||null,articles:articlesLabel});
-toast(`✅ ${fmt(total)} en espèces`);
+  db.caisse.liquide+=totalSansSuppl;
+  addHistorique({type:'vente',label:`Vente espèces — ${nomLabel}`,montant:totalSansSuppl,paiement:'espece',clientId:clientId||null,articles:articlesLabel});
+  toast(`✅ ${fmt(totalSansSuppl)} en espèces`);
 }else{
-db.caisse.compte+=total;
-addHistorique({type:'vente',label:`Vente CB — ${nomLabel}`,montant:total,paiement:'carte',clientId:clientId||null,articles:articlesLabel});
-toast(`✅ ${fmt(total)} par CB`);
+  db.caisse.compte+=totalSansSuppl;
+  addHistorique({type:'vente',label:`Vente CB — ${nomLabel}`,montant:totalSansSuppl,paiement:'carte',clientId:clientId||null,articles:articlesLabel});
+  toast(`✅ ${fmt(totalSansSuppl)} par CB`);
 }
 
-// Décrémenter stock (sauf prestations, repas, et boissons déjà décomptées)
-lines.forEach(([id,v])=>{
-if(v.isFormule){
-v.formuleArticles.forEach(fl=>{
-const art=db.articles.find(a=>a.id===fl.articleId);
-if(art&&art.type==='stock')art.qte-=fl.qte*v.qte;
+// Encaisser les suppléments boisson selon leur mode choisi
+lines.filter(([,v])=>v.isSupplBoisson&&v.supplMode).forEach(([,v])=>{
+  if(v.supplMode==='carte_popote'&&client){
+    const ca=client.cartes.find(c=>c.statut==='active');
+    if(ca)cocherCasesSimple(client,ca,Math.round(v.prixVente/CASE_VAL));
+    addHistorique({type:'vente',label:`Supplément boisson — ${nomLabel}`,montant:v.prixVente,paiement:'carte_popote',clientId,note:v.nom});
+  }else if(v.supplMode==='espece'){
+    db.caisse.liquide+=v.prixVente;
+    addHistorique({type:'vente',label:`Supplément boisson — ${nomLabel}`,montant:v.prixVente,paiement:'espece',clientId,note:v.nom});
+  }else if(v.supplMode==='carte'){
+    db.caisse.compte+=v.prixVente;
+    addHistorique({type:'vente',label:`Supplément boisson — ${nomLabel}`,montant:v.prixVente,paiement:'carte',clientId,note:v.nom});
+  }
 });
-}else if(v.stockDejaDecompte||v.isPrestation||v.isRepas||v.isSupplBoisson||v.isBoissonIncluse){
-// Déjà géré ou pas de stock à décrémenter
-}else{
-const art=db.articles.find(a=>a.id===id);
-if(art&&art.type==='stock')art.qte-=v.qte;
-}
-});
+
+// Décrémenter stock (articles normaux + boissons incluses)
+_decrementerStockVente(lines);
 saveDB();venteReset();
+}
+
+function _decrementerStockVente(lines){
+lines.forEach(([id,v])=>{
+  if(v.isFormule){
+    v.formuleArticles.forEach(fl=>{
+      const art=db.articles.find(a=>a.id===fl.articleId);
+      if(art&&art.type==='stock')art.qte-=fl.qte*v.qte;
+    });
+  }else if(v.isBoissonIncluse&&v.boissonArticleId){
+    // Boisson incluse dans repas — décompter maintenant
+    const art=db.articles.find(a=>a.id===v.boissonArticleId);
+    if(art&&art.type==='stock')art.qte-=v.qte;
+  }else if(!v.isPrestation&&!v.isRepas&&!v.isSupplBoisson&&!v.isBoissonIncluse){
+    const art=db.articles.find(a=>a.id===id);
+    if(art&&art.type==='stock')art.qte-=v.qte;
+  }
+});
+}
+
+// ================================================
+// DÉBORDEMENT CARTE — MODAL DE CHOIX
+// ================================================
+let _debordEnCours=null;
+
+function ouvrirModalDebord(montantCarte,montantRestant){
+  document.getElementById('debord-detail').innerHTML=`
+    <div class="alert alert-warning" style="margin-bottom:14px">
+      La carte ne couvre que <strong>${fmt(montantCarte)}</strong> sur <strong>${fmt(_debordEnCours.total)}</strong>.
+    </div>
+    <div style="font-size:14px;margin-bottom:16px">Il reste <strong style="color:var(--accent);font-size:18px">${fmt(montantRestant)}</strong> à régler.</div>
+    <div class="form-label" style="margin-bottom:10px">Comment régler le restant ?</div>`;
+  document.querySelectorAll('#debord-paiement-btns .paiement-card').forEach(el=>el.classList.remove('selected'));
+  openModal('modal-debord-carte');
+}
+
+function selectDebordPaiement(mode){
+  document.querySelectorAll('#debord-paiement-btns .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));
+}
+
+function selectDebordNouvelleCarte(mode){
+  document.querySelectorAll('#debord-nouvelle-carte-btns .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));
+}
+
+function validerDebordNouvelleCarteChoix(){
+  const modeEl=document.querySelector('#debord-nouvelle-carte-btns .paiement-card.selected');
+  if(!modeEl){toast('❌ Choisis comment payer la nouvelle carte');return;}
+  validerDebordNouvelleCarteDette(modeEl.dataset.mode);
+}
+
+function validerDebordNouvelleCarteDette(modePaiement='dette'){
+  if(!_debordEnCours)return;
+  const {client,ca,montantCarte,montantRestant,total,articlesLabel,nomLabel,clientId}=_debordEnCours;
+  // Cocher toutes les cases restantes de la carte active
+  cocherCasesSimple(client,ca,carteCasesLibres(ca));
+  // Ouvrir nouvelle carte avec le mode choisi
+  const nouvelleCarte=newCarte(client.id);
+  nouvelleCarte.paiementOuverture=modePaiement;
+  client.cartes.push(nouvelleCarte);
+  // Encaisser la nouvelle carte selon le mode
+  if(modePaiement==='espece')db.caisse.liquide+=10;
+  else if(modePaiement==='carte')db.caisse.compte+=10;
+  else client.dette=Math.round(((client.dette||0)+10)*100)/100;
+  // Cocher les cases nécessaires sur la nouvelle carte
+  const casesRestantes=Math.round(montantRestant/CASE_VAL);
+  cocherCasesSimple(client,nouvelleCarte,casesRestantes);
+  const modeLbl={espece:'💵 Espèces',carte:'💳 CB',dette:'🔖 À dette'};
+  addHistorique({type:'achat_carte',label:`Nouvelle carte — ${client.nom}`,montant:modePaiement==='dette'?0:10,paiement:modePaiement,clientId,note:`Débord ${fmt(montantRestant)} · ${modeLbl[modePaiement]}`});
+  addHistorique({type:'vente',label:`Vente carte — ${nomLabel}`,montant:total,paiement:'carte_popote',clientId,articles:articlesLabel,note:`Débord: ${fmt(montantRestant)} sur nouvelle carte (${modeLbl[modePaiement]})`});
+  _decrementerStockVente(Object.entries(venteArticles));
+  saveDB();closeModal('modal-debord-carte');_debordEnCours=null;venteReset();
+  toast(`✅ Vente OK — nouvelle carte ouverte (${modeLbl[modePaiement]})`);
+}
+
+function validerDebordPaiementSepare(){
+  const modeEl=document.querySelector('#debord-paiement-btns .paiement-card.selected');
+  if(!modeEl){toast('❌ Choisis un mode de paiement pour le restant');return;}
+  if(!_debordEnCours)return;
+  const mode=modeEl.dataset.mode;
+  const {client,ca,montantCarte,montantRestant,total,articlesLabel,nomLabel,clientId}=_debordEnCours;
+  // Cocher toutes les cases restantes de la carte
+  cocherCasesSimple(client,ca,carteCasesLibres(ca));
+  // Encaisser le restant
+  if(mode==='espece')db.caisse.liquide+=montantRestant;
+  else db.caisse.compte+=montantRestant;
+  addHistorique({type:'vente',label:`Vente carte+${mode==='espece'?'espèces':'CB'} — ${nomLabel}`,montant:total,paiement:'carte_popote',clientId,articles:articlesLabel,note:`${fmt(montantCarte)} carte + ${fmt(montantRestant)} ${mode==='espece'?'espèces':'CB'}`});
+  _decrementerStockVente(Object.entries(venteArticles));
+  saveDB();closeModal('modal-debord-carte');_debordEnCours=null;venteReset();
+  toast(`✅ Vente OK — ${fmt(montantRestant)} encaissé en ${mode==='espece'?'espèces':'CB'}`);
+}
+
+function cocherCasesSimple(client,carte,nbCases){
+  let fait=0;
+  for(let i=0;i<carte.cases.length&&fait<nbCases;i++){
+    if(!carte.cases[i]){carte.cases[i]=true;fait++;}
+  }
+  if(carteCasesLibres(carte)===0){
+    carte.statut='soldee';
+    activerCarteEnAttente(client);
+  }
 }
 
 function venteReset(){
