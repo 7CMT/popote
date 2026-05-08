@@ -196,7 +196,21 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 <div class="card">
   <div class="flex-between" style="margin-bottom:14px">
     <div class="card-title" style="margin:0">🏆 Top consommateurs carte Popote</div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select class="form-select" id="top-mois-select" style="width:130px" onchange="setTopPeriode('mois_select')">
+        <option value="0">Janvier</option>
+        <option value="1">Février</option>
+        <option value="2">Mars</option>
+        <option value="3">Avril</option>
+        <option value="4">Mai</option>
+        <option value="5">Juin</option>
+        <option value="6">Juillet</option>
+        <option value="7">Août</option>
+        <option value="8">Septembre</option>
+        <option value="9">Octobre</option>
+        <option value="10">Novembre</option>
+        <option value="11">Décembre</option>
+      </select>
       <button class="btn btn-secondary btn-sm" id="top-periode-mois" onclick="setTopPeriode('mois')" style="background:var(--accent);color:#000">Ce mois</button>
       <button class="btn btn-secondary btn-sm" id="top-periode-annee" onclick="setTopPeriode('annee')">Cette année</button>
     </div>
@@ -1183,6 +1197,9 @@ document.getElementById('stock-summary').innerHTML=`
 renderArgentImmobilise();
 const recent=[...db.historique].reverse().slice(0,8);
 document.getElementById('recent-history').innerHTML=recent.length?recent.map(histHTML).join(''):'<div class="text-muted" style="padding:16px;text-align:center">Aucune transaction</div>';
+// Présélectionner le mois en cours
+const selMois=document.getElementById('top-mois-select');
+if(selMois&&!selMois._init){selMois.value=new Date().getMonth();selMois._init=true;}
 renderTopClients();
 renderBenef();
 renderTopArticles();
@@ -3255,15 +3272,29 @@ function getDebutPeriode(periode){
   if(periode==='mois')return new Date(now.getFullYear(),now.getMonth(),1).getTime();
   if(periode==='annee')return new Date(now.getFullYear(),0,1).getTime();
   if(periode==='jour')return new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  if(periode==='mois_select'){
+    const mois=parseInt(document.getElementById('top-mois-select')?.value||now.getMonth());
+    const annee=now.getFullYear();
+    return{debut:new Date(annee,mois,1).getTime(),fin:new Date(annee,mois+1,0,23,59,59).getTime()};
+  }
   return 0;
+}
+
+function getTopDateRange(){
+  const now=new Date();
+  if(_topPeriode==='mois_select'){
+    const mois=parseInt(document.getElementById('top-mois-select')?.value??now.getMonth());
+    return{debut:new Date(now.getFullYear(),mois,1).getTime(),fin:new Date(now.getFullYear(),mois+1,0,23,59,59).getTime()};
+  }
+  const debut=getDebutPeriode(_topPeriode);
+  return{debut,fin:Infinity};
 }
 
 function renderTopClients(){
   const zone=document.getElementById('top-clients-zone');if(!zone)return;
-  const debut=getDebutPeriode(_topPeriode);
-  // Calculer la conso carte popote par client sur la période
+  const {debut,fin}=getTopDateRange();
   const conso={};
-  db.historique.filter(h=>h.ts>=debut&&h.type==='vente'&&h.paiement==='carte_popote'&&h.clientId).forEach(h=>{
+  db.historique.filter(h=>h.ts>=debut&&h.ts<=fin&&h.type==='vente'&&h.paiement==='carte_popote'&&h.clientId).forEach(h=>{
     conso[h.clientId]=(conso[h.clientId]||0)+h.montant;
   });
   const top=Object.entries(conso)
