@@ -316,46 +316,94 @@ Appuie pour ajouter au ticket ↓
 
 <div class="page" id="page-caisse">
 <div class="card-title">💰 Caisse</div>
-<div class="grid-3 mb-16" id="caisse-stats"></div>
+
+<!-- Stats globales -->
+
+<div class="grid-4 mb-16" id="caisse-stats"></div>
+
+<!-- Caisse Popote + Coffre -->
+
 <div class="grid-2">
-<div class="card"><div class="card-title">💵 Espèces</div><div id="caisse-liquide-detail"></div></div>
-<div class="card"><div class="card-title">💳 Compte CB</div><div id="caisse-compte-detail"></div></div>
+  <div class="card" style="border-color:var(--accent)">
+    <div class="card-title">💵 Caisse Popote <span style="font-size:11px;color:var(--text2);font-weight:400">(espèces disponibles)</span></div>
+    <div id="caisse-liquide-detail"></div>
+  </div>
+  <div class="card" style="border-color:var(--blue)">
+    <div class="card-title">🔐 Coffre <span style="font-size:11px;color:var(--text2);font-weight:400">(réserve sécurisée)</span></div>
+    <div id="caisse-coffre-detail"></div>
+  </div>
 </div>
+
+<!-- Transfert Caisse ↔ Coffre -->
+
+<div class="card" style="border-color:var(--purple)">
+  <div class="card-title">🔄 Transfert Caisse Popote ↔ Coffre 🔒</div>
+  <div class="grid-2">
+    <div>
+      <div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" id="transfert-montant" placeholder="0.00" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Sens du transfert</label>
+        <select class="form-select" id="transfert-sens">
+          <option value="caisse_vers_coffre">💵 Caisse → 🔐 Coffre (mise en sécurité)</option>
+          <option value="coffre_vers_caisse">🔐 Coffre → 💵 Caisse (réapprovisionnement)</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Motif (optionnel)</label><input class="form-input" type="text" id="transfert-motif" placeholder="Ex: bénéfice semaine..."></div>
+    </div>
+    <div style="display:flex;align-items:flex-end">
+      <button class="btn btn-primary" onclick="transfertCaisseSecure()" style="width:100%;justify-content:center">🔄 Transférer 🔒</button>
+    </div>
+  </div>
+</div>
+
+<!-- Compte CB -->
+
 <div class="card">
-<div class="card-title">📥 Rentrée d'argent</div>
-<div class="grid-2">
-<div>
-<div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" id="rentree-montant" placeholder="0.00" step="0.01"></div>
-<div class="form-group"><label class="form-label">Motif</label><input class="form-input" type="text" id="rentree-motif" placeholder="Ex: remboursement, don, subvention..."></div>
-<div class="form-group"><label class="form-label">Destination</label>
-<select class="form-select" id="rentree-source">
-<option value="espece">💵 Caisse espèces</option>
-<option value="carte">💳 Compte bancaire</option>
-</select>
+  <div class="card-title">💳 Compte CB</div>
+  <div id="caisse-compte-detail"></div>
 </div>
-</div>
-<div style="display:flex;align-items:flex-end">
-<button class="btn btn-green" onclick="rentreeCaisseSecure()" style="width:100%;justify-content:center">📥 Enregistrer la rentrée 🔒</button>
-</div>
-</div>
-</div>
+
+<!-- Rentrée d'argent -->
+
 <div class="card">
-<div class="card-title">📤 Sortie de caisse</div>
-<div class="grid-2">
-<div>
-<div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" id="sortie-montant" placeholder="0.00" step="0.01"></div>
-<div class="form-group"><label class="form-label">Motif</label><input class="form-input" type="text" id="sortie-motif" placeholder="Ex: achat matériel..."></div>
-<div class="form-group"><label class="form-label">Source</label>
-<select class="form-select" id="sortie-source">
-<option value="espece">💵 Caisse espèces</option>
-<option value="carte">💳 Compte bancaire</option>
-</select>
+  <div class="card-title">📥 Rentrée d'argent</div>
+  <div class="grid-2">
+    <div>
+      <div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" id="rentree-montant" placeholder="0.00" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Motif</label><input class="form-input" type="text" id="rentree-motif" placeholder="Ex: remboursement, don..."></div>
+      <div class="form-group"><label class="form-label">Destination</label>
+        <select class="form-select" id="rentree-source">
+          <option value="espece">💵 Caisse Popote (espèces)</option>
+          <option value="coffre">🔐 Coffre</option>
+          <option value="carte">💳 Compte bancaire</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-end">
+      <button class="btn btn-green" onclick="rentreeCaisseSecure()" style="width:100%;justify-content:center">📥 Enregistrer 🔒</button>
+    </div>
+  </div>
 </div>
-</div>
-<div style="display:flex;align-items:flex-end">
-<button class="btn btn-danger" onclick="sortieCaisseSecure()" style="width:100%;justify-content:center">📤 Enregistrer 🔒</button>
-</div>
-</div>
+
+<!-- Sortie de caisse -->
+
+<div class="card">
+  <div class="card-title">📤 Sortie de caisse</div>
+  <div class="grid-2">
+    <div>
+      <div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" id="sortie-montant" placeholder="0.00" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Motif</label><input class="form-input" type="text" id="sortie-motif" placeholder="Ex: achat matériel..."></div>
+      <div class="form-group"><label class="form-label">Source</label>
+        <select class="form-select" id="sortie-source">
+          <option value="espece">💵 Caisse Popote (espèces)</option>
+          <option value="coffre">🔐 Coffre</option>
+          <option value="carte">💳 Compte bancaire</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-end">
+      <button class="btn btn-danger" onclick="sortieCaisseSecure()" style="width:100%;justify-content:center">📤 Enregistrer 🔒</button>
+    </div>
+  </div>
 </div>
 </div>
 
@@ -996,6 +1044,7 @@ function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(db));}
 let db=loadDB();
 if(!db.categories)db.categories=[];
 if(!db.formules)db.formules=[];
+if(!db.caisse.coffre)db.caisse.coffre=0;
 
 // ================================================
 // UTILS
@@ -1104,13 +1153,13 @@ function renderDettesDetail(clientsEnDette){
 
 function renderDashboard(){
 renderAlerts();
-const total=db.caisse.liquide+db.caisse.compte;
+const total=db.caisse.liquide+db.caisse.compte+(db.caisse.coffre||0);
 let dettes=0;db.clients.forEach(c=>dettes+=c.dette||0);
 const clientsEnDette=db.clients.filter(c=>c.dette>0).sort((a,b)=>b.dette-a.dette);
 document.getElementById('dashboard-stats').innerHTML=`
-<div class="stat-box"><div class="stat-label">Total caisse</div><div class="stat-value yellow">${fmt(total)}</div></div>
-<div class="stat-box"><div class="stat-label">Espèces</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
-<div class="stat-box"><div class="stat-label">Compte CB</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
+<div class="stat-box"><div class="stat-label">Total général</div><div class="stat-value yellow">${fmt(total)}</div></div>
+<div class="stat-box"><div class="stat-label">💵 Caisse Popote</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
+<div class="stat-box"><div class="stat-label">🔐 Coffre</div><div class="stat-value blue">${fmt(db.caisse.coffre||0)}</div></div>
 <div class="stat-box" style="cursor:pointer" onclick="toggleDettesDetail()">
   <div class="stat-label">Dettes clients ${clientsEnDette.length>0?`(${clientsEnDette.length})`:''}▾</div>
   <div class="stat-value red">${fmt(dettes)}</div>
@@ -2605,47 +2654,105 @@ toast(`✅ Courses de ${fmt(montant)} enregistrées`);
 // CAISSE
 // ================================================
 function renderCaisse(){
-const total=db.caisse.liquide+db.caisse.compte;
-document.getElementById('caisse-stats').innerHTML=`
-<div class="stat-box"><div class="stat-label">Total</div><div class="stat-value yellow">${fmt(total)}</div></div>
-<div class="stat-box"><div class="stat-label">Espèces</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
-<div class="stat-box"><div class="stat-label">Compte CB</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>`;
-const mouvL=db.historique.filter(h=>h.paiement==='espece').reverse().slice(0,10);
-document.getElementById('caisse-liquide-detail').innerHTML=`
-<div class="stat-box mb-16"><div class="stat-label">Solde</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
-${mouvL.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><div><div>${h.label}</div><div style="color:var(--text2);font-size:11px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div></div><div class="mono ${h.montant>=0?'text-green':'text-red'}">${h.montant>=0?'+':''}${fmt(Math.abs(h.montant))}</div></div>`).join('')}
-${!mouvL.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
-const mouvC=db.historique.filter(h=>h.paiement==='carte'||h.paiement==='carte_bancaire').reverse().slice(0,10);
-document.getElementById('caisse-compte-detail').innerHTML=`
-<div class="stat-box mb-16"><div class="stat-label">Solde</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
-${mouvC.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><div><div>${h.label}</div><div style="color:var(--text2);font-size:11px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div></div><div class="mono ${h.montant>=0?'text-green':'text-red'}">${h.montant>=0?'+':''}${fmt(Math.abs(h.montant))}</div></div>`).join('')}
-${!mouvC.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
+  const coffre=db.caisse.coffre||0;
+  const total=db.caisse.liquide+db.caisse.compte+coffre;
+  document.getElementById('caisse-stats').innerHTML=`
+    <div class="stat-box"><div class="stat-label">Total général</div><div class="stat-value yellow">${fmt(total)}</div></div>
+    <div class="stat-box" style="border-color:var(--accent)"><div class="stat-label">💵 Caisse Popote</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
+    <div class="stat-box" style="border-color:var(--blue)"><div class="stat-label">🔐 Coffre</div><div class="stat-value blue">${fmt(coffre)}</div></div>
+    <div class="stat-box"><div class="stat-label">💳 Compte CB</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>`;
+
+  // Caisse Popote
+  const mouvL=db.historique.filter(h=>h.paiement==='espece').reverse().slice(0,10);
+  document.getElementById('caisse-liquide-detail').innerHTML=`
+    <div class="stat-box mb-16"><div class="stat-label">Solde caisse</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
+    ${mouvL.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div><div>${h.label}</div><div style="color:var(--text2);font-size:11px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div></div>
+      <div class="mono ${h.montant>=0?'text-green':'text-red'}">${h.montant>=0?'+':''}${fmt(Math.abs(h.montant))}</div>
+    </div>`).join('')}
+    ${!mouvL.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
+
+  // Coffre
+  const mouvCoffre=db.historique.filter(h=>h.paiement==='coffre').reverse().slice(0,10);
+  document.getElementById('caisse-coffre-detail').innerHTML=`
+    <div class="stat-box mb-16" style="border-color:var(--blue)"><div class="stat-label">Solde coffre</div><div class="stat-value blue">${fmt(coffre)}</div></div>
+    ${mouvCoffre.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div><div>${h.label}</div><div style="color:var(--text2);font-size:11px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div></div>
+      <div class="mono ${h.montant>=0?'text-green':'text-red'}">${h.montant>=0?'+':''}${fmt(Math.abs(h.montant))}</div>
+    </div>`).join('')}
+    ${!mouvCoffre.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
+
+  // Compte CB
+  const mouvC=db.historique.filter(h=>h.paiement==='carte'||h.paiement==='carte_bancaire').reverse().slice(0,10);
+  document.getElementById('caisse-compte-detail').innerHTML=`
+    <div class="stat-box mb-16"><div class="stat-label">Solde compte</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
+    ${mouvC.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div><div>${h.label}</div><div style="color:var(--text2);font-size:11px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div></div>
+      <div class="mono ${h.montant>=0?'text-green':'text-red'}">${h.montant>=0?'+':''}${fmt(Math.abs(h.montant))}</div>
+    </div>`).join('')}
+    ${!mouvC.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
+}
+
+function transfertCaisseSecure(){demanderPin(()=>transfertCaisse());}
+function transfertCaisse(){
+  const montant=parseFloat(document.getElementById('transfert-montant').value);
+  const sens=document.getElementById('transfert-sens').value;
+  const motif=document.getElementById('transfert-motif').value.trim()||'Transfert';
+  if(!montant||montant<=0){toast('❌ Montant invalide');return;}
+  if(!db.caisse.coffre)db.caisse.coffre=0;
+  if(sens==='caisse_vers_coffre'){
+    if(db.caisse.liquide<montant){toast('❌ Caisse insuffisante');return;}
+    db.caisse.liquide-=montant;
+    db.caisse.coffre+=montant;
+    addHistorique({type:'transfert',label:`Transfert caisse → coffre — ${motif}`,montant:-montant,paiement:'espece',note:`Vers coffre: ${fmt(montant)}`});
+    addHistorique({type:'transfert',label:`Transfert caisse → coffre — ${motif}`,montant:montant,paiement:'coffre',note:`Depuis caisse: ${fmt(montant)}`});
+    toast(`✅ ${fmt(montant)} transféré vers le coffre`);
+  }else{
+    if(db.caisse.coffre<montant){toast('❌ Coffre insuffisant');return;}
+    db.caisse.coffre-=montant;
+    db.caisse.liquide+=montant;
+    addHistorique({type:'transfert',label:`Transfert coffre → caisse — ${motif}`,montant:-montant,paiement:'coffre',note:`Vers caisse: ${fmt(montant)}`});
+    addHistorique({type:'transfert',label:`Transfert coffre → caisse — ${motif}`,montant:montant,paiement:'espece',note:`Depuis coffre: ${fmt(montant)}`});
+    toast(`✅ ${fmt(montant)} sorti du coffre vers la caisse`);
+  }
+  document.getElementById('transfert-montant').value='';
+  document.getElementById('transfert-motif').value='';
+  saveDB();renderCaisse();
 }
 function rentreeCaisse(){
-const montant=parseFloat(document.getElementById('rentree-montant').value);
-const motif=document.getElementById('rentree-motif').value.trim();
-const dest=document.getElementById('rentree-source').value;
-if(!montant||montant<=0){toast('❌ Montant invalide');return;}
-if(!motif){toast('❌ Précise le motif');return;}
-if(dest==='espece')db.caisse.liquide+=montant;else db.caisse.compte+=montant;
-addHistorique({type:'rentree',label:`Rentrée — ${motif}`,montant:montant,paiement:dest,note:motif});
-saveDB();renderCaisse();
-document.getElementById('rentree-montant').value='';document.getElementById('rentree-motif').value='';
-toast(`✅ Rentrée de ${fmt(montant)} enregistrée`);
+  const montant=parseFloat(document.getElementById('rentree-montant').value);
+  const motif=document.getElementById('rentree-motif').value.trim();
+  const dest=document.getElementById('rentree-source').value;
+  if(!montant||montant<=0){toast('❌ Montant invalide');return;}
+  if(!motif){toast('❌ Précise le motif');return;}
+  if(!db.caisse.coffre)db.caisse.coffre=0;
+  if(dest==='espece')db.caisse.liquide+=montant;
+  else if(dest==='coffre')db.caisse.coffre+=montant;
+  else db.caisse.compte+=montant;
+  const destLbl={espece:'💵 Caisse Popote',coffre:'🔐 Coffre',carte:'💳 Compte'};
+  addHistorique({type:'rentree',label:`Rentrée — ${motif}`,montant,paiement:dest,note:destLbl[dest]||dest});
+  saveDB();renderCaisse();
+  document.getElementById('rentree-montant').value='';document.getElementById('rentree-motif').value='';
+  toast(`✅ Rentrée de ${fmt(montant)} (${destLbl[dest]})`);
 }
 function sortieCaisse(){
-const montant=parseFloat(document.getElementById('sortie-montant').value);
-const motif=document.getElementById('sortie-motif').value.trim();
-const source=document.getElementById('sortie-source').value;
-if(!montant||montant<=0){toast('❌ Montant invalide');return;}
-if(!motif){toast('❌ Précise le motif');return;}
-if(source==='espece'&&db.caisse.liquide<montant){toast('❌ Fonds insuffisants');return;}
-if(source==='carte'&&db.caisse.compte<montant){toast('❌ Compte insuffisant');return;}
-if(source==='espece')db.caisse.liquide-=montant;else db.caisse.compte-=montant;
-addHistorique({type:'sortie',label:`Sortie — ${motif}`,montant:-montant,paiement:source,note:motif});
-saveDB();renderCaisse();
-document.getElementById('sortie-montant').value='';document.getElementById('sortie-motif').value='';
-toast(`✅ Sortie de ${fmt(montant)} enregistrée`);
+  const montant=parseFloat(document.getElementById('sortie-montant').value);
+  const motif=document.getElementById('sortie-motif').value.trim();
+  const source=document.getElementById('sortie-source').value;
+  if(!montant||montant<=0){toast('❌ Montant invalide');return;}
+  if(!motif){toast('❌ Précise le motif');return;}
+  if(!db.caisse.coffre)db.caisse.coffre=0;
+  if(source==='espece'&&db.caisse.liquide<montant){toast('❌ Caisse insuffisante');return;}
+  if(source==='coffre'&&db.caisse.coffre<montant){toast('❌ Coffre insuffisant');return;}
+  if(source==='carte'&&db.caisse.compte<montant){toast('❌ Compte insuffisant');return;}
+  if(source==='espece')db.caisse.liquide-=montant;
+  else if(source==='coffre')db.caisse.coffre-=montant;
+  else db.caisse.compte-=montant;
+  const srcLbl={espece:'💵 Caisse Popote',coffre:'🔐 Coffre',carte:'💳 Compte'};
+  addHistorique({type:'sortie',label:`Sortie — ${motif}`,montant:-montant,paiement:source,note:srcLbl[source]||source});
+  saveDB();renderCaisse();
+  document.getElementById('sortie-montant').value='';document.getElementById('sortie-motif').value='';
+  toast(`✅ Sortie de ${fmt(montant)} (${srcLbl[source]})`);
 }
 
 // ================================================
