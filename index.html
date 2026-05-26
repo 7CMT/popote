@@ -109,40 +109,40 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 
 /* GRILLE ARTICLES BOUTONS */
 .articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
-.article-btn{background:var(–surface2);border:2px solid var(–border);border-radius:var(–radius);padding:16px 12px;cursor:pointer;text-align:center;transition:all 0.12s;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;}
-.article-btn:hover{border-color:var(–accent);background:var(–surface3);}
+.article-btn{background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);padding:16px 12px;cursor:pointer;text-align:center;transition:all 0.12s;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;}
+.article-btn:hover{border-color:var(--accent);background:var(--surface3);}
 .article-btn:active{transform:scale(0.94);}
 .article-btn.zero-stock{opacity:0.35;cursor:not-allowed;}
-.article-btn.has-qty{border-color:var(–accent);background:#2d2410;}
+.article-btn.has-qty{border-color:var(--accent);background:#2d2410;}
 .article-btn-nom{font-weight:700;font-size:15px;margin-bottom:5px;line-height:1.2;}
-.article-btn-prix{font-family:var(–font-mono);font-size:13px;color:var(–accent);font-weight:600;}
-.article-btn-stock{font-size:11px;color:var(–text2);margin-top:5px;}
-.article-btn-qty-badge{position:absolute;top:-10px;right:-10px;background:var(–accent);color:#000;font-weight:800;font-size:14px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(–font-title);box-shadow:0 2px 8px rgba(240,180,41,0.4);}
+.article-btn-prix{font-family:var(--font-mono);font-size:13px;color:var(--accent);font-weight:600;}
+.article-btn-stock{font-size:11px;color:var(--text2);margin-top:5px;}
+.article-btn-qty-badge{position:absolute;top:-10px;right:-10px;background:var(--accent);color:#000;font-weight:800;font-size:14px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-title);box-shadow:0 2px 8px rgba(240,180,41,0.4);}
 
 /* TICKET */
-.ticket{background:var(–surface2);border:1px solid var(–border);border-radius:var(–radius);padding:18px;position:sticky;top:80px;}
-.ticket-title{font-family:var(–font-title);font-weight:700;font-size:13px;color:var(–text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px dashed var(–border);text-align:center;}
-.ticket-line{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(–border);font-size:13px;}
+.ticket{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:sticky;top:80px;}
+.ticket-title{font-family:var(--font-title);font-weight:700;font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px dashed var(--border);text-align:center;}
+.ticket-line{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
 .ticket-line:last-of-type{border-bottom:none;}
 .ticket-line-left{flex:1;}
 .ticket-line-nom{font-weight:600;}
 .ticket-line-qty{display:flex;align-items:center;gap:8px;margin:0 10px;}
-.qty-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(–border);background:var(–surface3);color:var(–text);cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all 0.1s;line-height:1;}
-.qty-btn:active{transform:scale(0.88);background:var(–accent);color:#000;}
-.ticket-line-prix{font-family:var(–font-mono);color:var(–accent);font-weight:600;min-width:60px;text-align:right;}
-.ticket-total{background:var(–surface3);border-radius:10px;padding:14px;margin-top:14px;text-align:center;}
-.ticket-total-label{font-size:11px;color:var(–text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-.ticket-total-value{font-family:var(–font-title);font-size:32px;font-weight:800;color:var(–accent);}
-.ticket-empty{text-align:center;color:var(–text2);font-size:13px;padding:32px 0;line-height:2;}
+.qty-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:var(--text);cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all 0.1s;line-height:1;}
+.qty-btn:active{transform:scale(0.88);background:var(--accent);color:#000;}
+.ticket-line-prix{font-family:var(--font-mono);color:var(--accent);font-weight:600;min-width:60px;text-align:right;}
+.ticket-total{background:var(--surface3);border-radius:10px;padding:14px;margin-top:14px;text-align:center;}
+.ticket-total-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.ticket-total-value{font-family:var(--font-title);font-size:32px;font-weight:800;color:var(--accent);}
+.ticket-empty{text-align:center;color:var(--text2);font-size:13px;padding:32px 0;line-height:2;}
 
 /* PAIEMENT CHOIX */
 .paiement-choix{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;}
-.paiement-card{border:2px solid var(–border);border-radius:var(–radius);padding:16px 10px;cursor:pointer;text-align:center;transition:all 0.15s;background:var(–surface2);}
-.paiement-card:hover{border-color:var(–accent);}
-.paiement-card.selected{border-color:var(–accent);background:#2d2410;box-shadow:0 0 0 3px rgba(240,180,41,0.25);}
+.paiement-card{border:2px solid var(--border);border-radius:var(--radius);padding:16px 10px;cursor:pointer;text-align:center;transition:all 0.15s;background:var(--surface2);}
+.paiement-card:hover{border-color:var(--accent);}
+.paiement-card.selected{border-color:var(--accent);background:#2d2410;box-shadow:0 0 0 3px rgba(240,180,41,0.25);}
 .paiement-card .pc-icon{font-size:24px;margin-bottom:6px;}
 .paiement-card .pc-label{font-weight:600;font-size:13px;}
-.paiement-card .pc-sub{font-size:11px;color:var(–text2);margin-top:3px;}
+.paiement-card .pc-sub{font-size:11px;color:var(--text2);margin-top:3px;}
 
 .ticket-paiement-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
 .ticket-paiement-btns .paiement-card{padding:10px 6px;}
@@ -151,17 +151,17 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 
 /* CATEGORIES */
 .cats-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
-.cat-btn{padding:8px 16px;border-radius:20px;border:2px solid var(–border);background:var(–surface2);color:var(–text2);cursor:pointer;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
-.cat-btn:hover{border-color:var(–accent);color:var(–text);}
-.cat-btn.active{background:var(–accent);border-color:var(–accent);color:#000;font-weight:700;box-shadow:0 0 0 3px rgba(240,180,41,0.3);}
-.cat-btn.all{border-color:var(–accent);}
+.cat-btn{padding:8px 16px;border-radius:20px;border:2px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.cat-btn:hover{border-color:var(--accent);color:var(--text);}
+.cat-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700;box-shadow:0 0 0 3px rgba(240,180,41,0.3);}
+.cat-btn.all{border-color:var(--accent);}
 
 /* PARAMETRES */
 .color-choice{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all 0.15s;flex-shrink:0;}
-.color-choice.selected{border-color:#fff;box-shadow:0 0 0 2px var(–accent);transform:scale(1.15);}
+.color-choice.selected{border-color:#fff;box-shadow:0 0 0 2px var(--accent);transform:scale(1.15);}
 .color-choice:hover{transform:scale(1.1);}
 .theme-choice{transition:all 0.15s;}
-.taille-btn-active{background:var(–accent)!important;color:#000!important;}
+.taille-btn-active{background:var(--accent)!important;color:#000!important;}
 </style>
 
 </head>
@@ -332,11 +332,9 @@ Appuie pour ajouter au ticket ↓
 <div class="card-title">💰 Caisse</div>
 
 <!-- Stats globales -->
-
 <div class="grid-4 mb-16" id="caisse-stats"></div>
 
 <!-- Caisse Popote + Coffre -->
-
 <div class="grid-2">
   <div class="card" style="border-color:var(--accent)">
     <div class="card-title">💵 Caisse Popote <span style="font-size:11px;color:var(--text2);font-weight:400">(espèces disponibles)</span></div>
@@ -349,7 +347,6 @@ Appuie pour ajouter au ticket ↓
 </div>
 
 <!-- Transfert Caisse ↔ Coffre -->
-
 <div class="card" style="border-color:var(--purple)">
   <div class="card-title">🔄 Transfert Caisse Popote ↔ Coffre 🔒</div>
   <div class="grid-2">
@@ -370,14 +367,12 @@ Appuie pour ajouter au ticket ↓
 </div>
 
 <!-- Compte CB -->
-
 <div class="card">
   <div class="card-title">💳 Compte CB</div>
   <div id="caisse-compte-detail"></div>
 </div>
 
 <!-- Rentrée d'argent -->
-
 <div class="card">
   <div class="card-title">📥 Rentrée d'argent</div>
   <div class="grid-2">
@@ -399,7 +394,6 @@ Appuie pour ajouter au ticket ↓
 </div>
 
 <!-- Sortie de caisse -->
-
 <div class="card">
   <div class="card-title">📤 Sortie de caisse</div>
   <div class="grid-2">
@@ -748,6 +742,13 @@ Appuie pour ajouter au ticket ↓
 <div class="form-group"><label class="form-label">Catégorie</label>
 <select class="form-select" id="na-categorie"><option value="">-- Sans catégorie --</option></select>
 </div>
+<div class="form-group" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:12px">
+<input type="checkbox" id="na-benef" checked style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
+<div>
+<label for="na-benef" style="font-weight:600;cursor:pointer">Compter dans les bénéfices</label>
+<div style="font-size:11px;color:var(--text2);margin-top:2px">Décocher pour les articles offerts, café, etc.</div>
+</div>
+</div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="closeModal('modal-new-article')">Annuler</button>
 <button class="btn btn-primary" onclick="createArticle()">Créer</button>
@@ -794,6 +795,13 @@ Appuie pour ajouter au ticket ↓
 </div>
 <div class="form-group"><label class="form-label">Catégorie</label>
 <select class="form-select" id="ea-categorie"><option value="">-- Sans catégorie --</option></select>
+</div>
+<div class="form-group" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:12px">
+<input type="checkbox" id="ea-benef" checked style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
+<div>
+<label for="ea-benef" style="font-weight:600;cursor:pointer">Compter dans les bénéfices</label>
+<div style="font-size:11px;color:var(--text2);margin-top:2px">Décocher pour les articles offerts, café, etc.</div>
+</div>
 </div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="closeModal('modal-edit-article')">Annuler</button>
@@ -955,7 +963,6 @@ Appuie pour ajouter au ticket ↓
 </div>
 
 <!-- Modal PIN -->
-
 <div class="modal-overlay" id="modal-pin">
 <div class="modal" style="max-width:320px;text-align:center">
 <div style="font-size:36px;margin-bottom:10px">🔒</div>
@@ -986,7 +993,6 @@ Appuie pour ajouter au ticket ↓
 </div>
 
 <!-- Confirmation nettoyage historique -->
-
 <div class="modal-overlay" id="modal-confirm-clean">
 <div class="modal" style="max-width:400px;text-align:center">
 <div style="font-size:40px;margin-bottom:12px">🗑️</div>
@@ -1001,7 +1007,6 @@ Appuie pour ajouter au ticket ↓
 </div>
 
 <!-- Débordement carte Popote -->
-
 <div class="modal-overlay" id="modal-debord-carte">
 <div class="modal" style="max-width:420px">
 <div style="font-size:36px;text-align:center;margin-bottom:8px">🍲</div>
@@ -1009,7 +1014,6 @@ Appuie pour ajouter au ticket ↓
 <div id="debord-detail"></div>
 
 <!-- Option 1 : payer le restant séparément -->
-
 <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid var(--border)">
   <div style="font-weight:700;font-size:13px;margin-bottom:10px">Option 1 — Payer le restant séparément</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px" id="debord-paiement-btns">
@@ -1024,7 +1028,6 @@ Appuie pour ajouter au ticket ↓
 </div>
 
 <!-- Option 2 : ouvrir nouvelle carte -->
-
 <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid var(--border)">
   <div style="font-weight:700;font-size:13px;margin-bottom:10px">Option 2 — Ouvrir une nouvelle carte Popote</div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px" id="debord-nouvelle-carte-btns">
@@ -1042,7 +1045,6 @@ Appuie pour ajouter au ticket ↓
 </div>
 
 <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="closeModal('modal-debord-carte');_debordEnCours=null;">Annuler</button>
-
 </div>
 </div>
 
@@ -2211,15 +2213,50 @@ if(_ventePaiement==='carte_popote'){
   const casesNecessaires=Math.round(totalSansSuppl/CASE_VAL);
 
   if(casesNecessaires>libres){
-    const montantCarte=libres*CASE_VAL;
-    const montantRestant=Math.round((totalSansSuppl-montantCarte)*100)/100;
-    _debordEnCours={client,ca,montantCarte,montantRestant,total:totalSansSuppl,articlesLabel,nomLabel,clientId};
-    ouvrirModalDebord(montantCarte,montantRestant);
-    return;
+    // Vérifier s'il y a une carte en attente
+    const carteEnAttente=client.cartes.filter(c=>c.statut==='en_attente').sort((a,b)=>a.dateCreation-b.dateCreation)[0];
+    if(carteEnAttente){
+      // Décompter sur la carte active puis continuer sur la carte en attente
+      cocherCasesSimple(client,ca,libres); // épuiser la carte active
+      // La carte en attente devient active automatiquement via activerCarteEnAttente
+      const casesRestantes=casesNecessaires-libres;
+      if(casesRestantes>0){
+        const casesDispoAttente=carteCasesLibres(carteEnAttente);
+        const aCocher=Math.min(casesRestantes,casesDispoAttente);
+        // Activer la carte en attente
+        carteEnAttente.statut='active';
+        cocherCasesSimple(client,carteEnAttente,aCocher);
+        const casesEncore=casesRestantes-aCocher;
+        if(casesEncore>0){
+          // Il reste encore des cases à cocher sur une éventuelle 3e carte
+          const montantRestant2=Math.round(casesEncore*CASE_VAL*100)/100;
+          const carteEnAttente2=client.cartes.filter(c=>c.statut==='en_attente').sort((a,b)=>a.dateCreation-b.dateCreation)[0];
+          if(carteEnAttente2){
+            carteEnAttente2.statut='active';
+            cocherCasesSimple(client,carteEnAttente2,casesEncore);
+          }else{
+            // Plus de carte en attente → ouvrir modal
+            _debordEnCours={client,ca:carteEnAttente,montantCarte:aCocher*CASE_VAL,montantRestant:montantRestant2,total:totalSansSuppl,articlesLabel,nomLabel,clientId};
+            ouvrirModalDebord(aCocher*CASE_VAL,montantRestant2);
+            return;
+          }
+        }
+      }
+      addHistorique({type:'vente',label:`Vente carte — ${nomLabel}`,montant:totalSansSuppl,paiement:'carte_popote',clientId:clientId||null,articles:articlesLabel,note:'Débord sur carte suivante'});
+      toast(`✅ ${fmt(totalSansSuppl)} — débord automatique sur la carte suivante`);
+    }else{
+      // Pas de carte en attente → proposer le choix
+      const montantCarte=libres*CASE_VAL;
+      const montantRestant=Math.round((totalSansSuppl-montantCarte)*100)/100;
+      _debordEnCours={client,ca,montantCarte,montantRestant,total:totalSansSuppl,articlesLabel,nomLabel,clientId};
+      ouvrirModalDebord(montantCarte,montantRestant);
+      return;
+    }
+  }else{
+    cocherCasesSimple(client,ca,casesNecessaires);
+    addHistorique({type:'vente',label:`Vente carte — ${nomLabel}`,montant:totalSansSuppl,paiement:'carte_popote',clientId:clientId||null,articles:articlesLabel});
+    toast(`✅ ${fmt(totalSansSuppl)} sur carte Popote`);
   }
-  cocherCasesSimple(client,ca,casesNecessaires);
-  addHistorique({type:'vente',label:`Vente carte — ${nomLabel}`,montant:totalSansSuppl,paiement:'carte_popote',clientId:clientId||null,articles:articlesLabel});
-  toast(`✅ ${fmt(totalSansSuppl)} sur carte Popote`);
 }else if(_ventePaiement==='espece'){
   db.caisse.liquide+=totalSansSuppl;
   addHistorique({type:'vente',label:`Vente espèces — ${nomLabel}`,montant:totalSansSuppl,paiement:'espece',clientId:clientId||null,articles:articlesLabel});
@@ -2572,11 +2609,13 @@ unite:isStock?(document.getElementById('na-unite').value.trim()):'',
 categorieId:document.getElementById('na-categorie').value||null,
 type:_naType,
 plafondBoisson:isRepas?(parseFloat(document.getElementById('na-plafond').value)||0.75):null,
+compteBenef:document.getElementById('na-benef').checked,
 });
 saveDB();closeModal('modal-new-article');
 ['na-nom','na-achat','na-vente','na-qte','na-min','na-unite'].forEach(id=>document.getElementById(id).value='');
 document.getElementById('na-categorie').value='';
 document.getElementById('na-plafond').value='0.75';
+document.getElementById('na-benef').checked=true;
 _naType='stock';selectTypeArticle('stock');
 renderStock();toast(`✅ Article créé`);
 }
@@ -2593,6 +2632,7 @@ document.getElementById('ea-min').value=a.stockMin||0;
 document.getElementById('ea-unite').value=a.unite||'';
 document.getElementById('ea-plafond').value=a.plafondBoisson||0.75;
 document.getElementById('ea-categorie').value=a.categorieId||'';
+document.getElementById('ea-benef').checked=a.compteBenef!==false; // true par défaut
 selectTypeArticleEdit(_eaType);
 openModal('modal-edit-article');
 }
@@ -2603,6 +2643,7 @@ a.nom=document.getElementById('ea-nom').value.trim();
 a.prixAchat=parseFloat(document.getElementById('ea-achat').value)||0;
 a.prixVente=parseFloat(document.getElementById('ea-vente').value);
 a.type=_eaType;
+a.compteBenef=document.getElementById('ea-benef').checked;
 if(_eaType==='stock'){
 a.qte=parseInt(document.getElementById('ea-qte').value)||0;
 a.stockMin=parseInt(document.getElementById('ea-min').value)||0;
@@ -3344,15 +3385,16 @@ function renderBenef(){
 
   db.historique.filter(h=>h.ts>=debut&&h.type==='vente').forEach(h=>{
     chiffreAffaires+=h.montant;
-    // Calculer la marge sur les articles vendus
     if(h.articles){
       h.articles.split(', ').forEach(ligne=>{
         const match=ligne.match(/^(\d+)×\s(.+)$/);
         if(!match)return;
         const qte=parseInt(match[1]);const nom=match[2].replace('🥘 ','').replace(' (incluse)','');
         const art=db.articles.find(a=>a.nom===nom||`🥘 ${a.nom}`===nom);
-        if(art&&art.type==='stock'){benefArticles+=(art.prixVente-art.prixAchat)*qte;}
-        if(art&&art.type==='repas'){nbRepas+=qte;benefRepas+=(art.prixVente-coutRepas)*qte;}
+        // Ne compter que si compteBenef !== false
+        if(!art||art.compteBenef===false)return;
+        if(art.type==='stock'){benefArticles+=(art.prixVente-art.prixAchat)*qte;}
+        if(art.type==='repas'){nbRepas+=qte;benefRepas+=(art.prixVente-coutRepas)*qte;}
       });
     }
   });
@@ -3419,3 +3461,4 @@ renderDashboard();
 
 </body>
 </html>
+
