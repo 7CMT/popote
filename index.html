@@ -3378,35 +3378,54 @@ function setBenefPeriode(periode){
 
 function renderBenef(){
   const zone=document.getElementById('benef-zone');if(!zone)return;
-  const debut=getDebutPeriode(_benefPeriode);
+  const now=new Date();
+  let debut,fin=Infinity;
+  if(_benefPeriode==='jour'){debut=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();}
+  else if(_benefPeriode==='mois'){debut=new Date(now.getFullYear(),now.getMonth(),1).getTime();}
+  else{debut=new Date(now.getFullYear(),0,1).getTime();}
   const coutRepas=parseFloat(document.getElementById('cout-repas-input')?.value)||0;
 
   let benefArticles=0,benefRepas=0,nbRepas=0,chiffreAffaires=0;
 
-  db.historique.filter(h=>h.ts>=debut&&h.type==='vente').forEach(h=>{
+  db.historique.filter(h=>h.ts>=debut&&h.ts<=fin&&h.type==='vente').forEach(h=>{
     chiffreAffaires+=h.montant;
-    if(h.articles){
-      h.articles.split(', ').forEach(ligne=>{
-        const match=ligne.match(/^(\d+)×\s(.+)$/);
-        if(!match)return;
-        const qte=parseInt(match[1]);const nom=match[2].replace('🥘 ','').replace(' (incluse)','');
-        const art=db.articles.find(a=>a.nom===nom||`🥘 ${a.nom}`===nom);
-        // Ne compter que si compteBenef !== false
-        if(!art||art.compteBenef===false)return;
-        if(art.type==='stock'){benefArticles+=(art.prixVente-art.prixAchat)*qte;}
-        if(art.type==='repas'){nbRepas+=qte;benefRepas+=(art.prixVente-coutRepas)*qte;}
-      });
-    }
+    if(!h.articles)return;
+    h.articles.split(', ').forEach(ligne=>{
+      const match=ligne.match(/^(\d+)×\s(.+)$/);
+      if(!match)return;
+      const qte=parseInt(match[1]);
+      const nomBrut=match[2].trim();
+      // Chercher l'article par nom exact ou avec préfixes
+      const art=db.articles.find(a=>
+        a.nom===nomBrut||
+        `🥘 ${a.nom}`===nomBrut||
+        nomBrut===`🥘 ${a.nom}`||
+        nomBrut.replace('🥘 ','')===a.nom||
+        nomBrut.replace(' (incluse)','')===a.nom
+      );
+      // Ignorer si article non trouvé OU explicitement exclu des bénéfices
+      if(!art)return;
+      if(art.compteBenef===false)return; // explicitement décoché
+      if(art.type==='stock'){
+        benefArticles+=(art.prixVente-art.prixAchat)*qte;
+      }
+      if(art.type==='repas'){
+        nbRepas+=qte;
+        benefRepas+=(art.prixVente-coutRepas)*qte;
+      }
+    });
   });
 
   const benefTotal=benefArticles+benefRepas;
+  const exclus=db.articles.filter(a=>a.compteBenef===false);
   zone.innerHTML=`
     <div class="grid-3" style="margin-bottom:12px">
       <div class="stat-box"><div class="stat-label">Chiffre d'affaires</div><div class="stat-value blue">${fmt(chiffreAffaires)}</div></div>
       <div class="stat-box"><div class="stat-label">Marge articles</div><div class="stat-value green">${fmt(benefArticles)}</div></div>
       <div class="stat-box" style="border-color:var(--accent)"><div class="stat-label">Bénéfice total estimé</div><div class="stat-value yellow">${fmt(benefTotal)}</div></div>
     </div>
-    ${nbRepas>0?`<div style="font-size:12px;color:var(--text2);padding:8px 12px;background:var(--surface2);border-radius:8px">🥘 ${nbRepas} repas vendus · Marge repas : <strong style="color:var(--green)">${fmt(benefRepas)}</strong> (coût estimé ${fmt(coutRepas)}/repas)</div>`:''}`;
+    ${nbRepas>0?`<div style="font-size:12px;color:var(--text2);padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:8px">🥘 ${nbRepas} repas vendus · Marge repas : <strong style="color:var(--green)">${fmt(benefRepas)}</strong> (coût estimé ${fmt(coutRepas)}/repas)</div>`:''}
+    ${exclus.length>0?`<div style="font-size:11px;color:var(--text2);padding:6px 10px;background:var(--surface3);border-radius:6px">⚠️ Exclus des bénéfices : ${exclus.map(a=>a.nom).join(', ')}</div>`:''}`;
 }
 
 // ================================================
@@ -3461,4 +3480,3 @@ renderDashboard();
 
 </body>
 </html>
-
