@@ -220,23 +220,29 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 <div class="card">
   <div class="flex-between" style="margin-bottom:14px">
     <div class="card-title" style="margin:0">📈 Bénéfice estimé</div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-secondary btn-sm" id="benef-periode-jour" onclick="setBenefPeriode('jour')">Aujourd'hui</button>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select class="form-select" id="benef-mois-select" style="width:130px" onchange="setBenefPeriode('mois_select')">
+        <option value="0">Janvier</option><option value="1">Février</option><option value="2">Mars</option>
+        <option value="3">Avril</option><option value="4">Mai</option><option value="5">Juin</option>
+        <option value="6">Juillet</option><option value="7">Août</option><option value="8">Septembre</option>
+        <option value="9">Octobre</option><option value="10">Novembre</option><option value="11">Décembre</option>
+      </select>
       <button class="btn btn-secondary btn-sm" id="benef-periode-mois" onclick="setBenefPeriode('mois')" style="background:var(--accent);color:#000">Ce mois</button>
       <button class="btn btn-secondary btn-sm" id="benef-periode-annee" onclick="setBenefPeriode('annee')">Cette année</button>
     </div>
   </div>
   <div id="benef-zone"></div>
-  <div style="font-size:11px;color:var(--text2);margin-top:8px">⚠️ Estimation basée sur la marge achat/vente des articles vendus. Pour les repas, entre ton coût moyen ci-dessous.</div>
-  <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap">
-    <label class="form-label" style="margin:0;white-space:nowrap">Coût moyen d'un repas (€)</label>
-    <input class="form-input" type="number" id="cout-repas-input" style="width:100px" step="0.10" placeholder="1.50" oninput="renderBenef()">
-  </div>
 </div>
 <div class="card">
   <div class="flex-between" style="margin-bottom:14px">
     <div class="card-title" style="margin:0">🥇 Top articles vendus</div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select class="form-select" id="top-art-mois-select" style="width:130px" onchange="setTopArtPeriode('mois_select')">
+        <option value="0">Janvier</option><option value="1">Février</option><option value="2">Mars</option>
+        <option value="3">Avril</option><option value="4">Mai</option><option value="5">Juin</option>
+        <option value="6">Juillet</option><option value="7">Août</option><option value="8">Septembre</option>
+        <option value="9">Octobre</option><option value="10">Novembre</option><option value="11">Décembre</option>
+      </select>
       <button class="btn btn-secondary btn-sm" id="top-art-mois" onclick="setTopArtPeriode('mois')" style="background:var(--accent);color:#000">Ce mois</button>
       <button class="btn btn-secondary btn-sm" id="top-art-annee" onclick="setTopArtPeriode('annee')">Cette année</button>
     </div>
@@ -1202,6 +1208,10 @@ document.getElementById('recent-history').innerHTML=recent.length?recent.map(his
 // Présélectionner le mois en cours
 const selMois=document.getElementById('top-mois-select');
 if(selMois&&!selMois._init){selMois.value=new Date().getMonth();selMois._init=true;}
+const selBenef=document.getElementById('benef-mois-select');
+if(selBenef&&!selBenef._init){selBenef.value=new Date().getMonth();selBenef._init=true;}
+const selTopArt=document.getElementById('top-art-mois-select');
+if(selTopArt&&!selTopArt._init){selTopArt.value=new Date().getMonth();selTopArt._init=true;}
 renderTopClients();
 renderBenef();
 renderTopArticles();
@@ -3369,23 +3379,37 @@ let _benefPeriode='mois';
 
 function setBenefPeriode(periode){
   _benefPeriode=periode;
-  ['jour','mois','annee'].forEach(p=>{
+  ['mois','annee'].forEach(p=>{
     const el=document.getElementById('benef-periode-'+p);
     if(el)el.style.cssText=p===periode?'background:var(--accent);color:#000':'';
   });
   renderBenef();
 }
 
+function getBenefDateRange(){
+  const now=new Date();
+  if(_benefPeriode==='mois_select'){
+    const mois=parseInt(document.getElementById('benef-mois-select')?.value??now.getMonth());
+    return{debut:new Date(now.getFullYear(),mois,1).getTime(),fin:new Date(now.getFullYear(),mois+1,0,23,59,59).getTime()};
+  }
+  if(_benefPeriode==='mois')return{debut:new Date(now.getFullYear(),now.getMonth(),1).getTime(),fin:Infinity};
+  if(_benefPeriode==='annee')return{debut:new Date(now.getFullYear(),0,1).getTime(),fin:Infinity};
+  return{debut:new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),fin:Infinity};
+}
+
 function renderBenef(){
   const zone=document.getElementById('benef-zone');if(!zone)return;
-  const now=new Date();
-  let debut,fin=Infinity;
-  if(_benefPeriode==='jour'){debut=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();}
-  else if(_benefPeriode==='mois'){debut=new Date(now.getFullYear(),now.getMonth(),1).getTime();}
-  else{debut=new Date(now.getFullYear(),0,1).getTime();}
-  const coutRepas=parseFloat(document.getElementById('cout-repas-input')?.value)||0;
+  const {debut,fin}=getBenefDateRange();
 
-  let benefArticles=0,benefRepas=0,nbRepas=0,chiffreAffaires=0;
+  let chiffreAffaires=0,margeTotale=0;
+  const detailParArticle={};
+
+  // Construire map nom→article
+  const artMap={};
+  db.articles.forEach(a=>{
+    artMap[a.nom]=a;
+    artMap[`🥘 ${a.nom}`]=a;
+  });
 
   db.historique.filter(h=>h.ts>=debut&&h.ts<=fin&&h.type==='vente').forEach(h=>{
     chiffreAffaires+=h.montant;
@@ -3395,37 +3419,36 @@ function renderBenef(){
       if(!match)return;
       const qte=parseInt(match[1]);
       const nomBrut=match[2].trim();
-      // Chercher l'article par nom exact ou avec préfixes
-      const art=db.articles.find(a=>
-        a.nom===nomBrut||
-        `🥘 ${a.nom}`===nomBrut||
-        nomBrut===`🥘 ${a.nom}`||
-        nomBrut.replace('🥘 ','')===a.nom||
-        nomBrut.replace(' (incluse)','')===a.nom
-      );
-      // Ignorer si article non trouvé OU explicitement exclu des bénéfices
+      const nomNettoye=nomBrut.replace('🥘 ','').replace(' (incluse)','').replace('↑ Supplément ','');
+      // Ignorer les lignes de supplément et boissons incluses (déjà comptées dans le ticket)
+      if(nomBrut.startsWith('🥤')||nomBrut.startsWith('↑'))return;
+      const art=artMap[nomBrut]||artMap[nomNettoye]||db.articles.find(a=>nomNettoye===a.nom||nomBrut.includes(a.nom));
       if(!art)return;
-      if(art.compteBenef===false)return; // explicitement décoché
-      if(art.type==='stock'){
-        benefArticles+=(art.prixVente-art.prixAchat)*qte;
-      }
-      if(art.type==='repas'){
-        nbRepas+=qte;
-        benefRepas+=(art.prixVente-coutRepas)*qte;
-      }
+      const marge=(art.prixVente-(art.prixAchat||0))*qte;
+      margeTotale+=marge;
+      if(!detailParArticle[art.nom])detailParArticle[art.nom]={qte:0,marge:0,type:art.type};
+      detailParArticle[art.nom].qte+=qte;
+      detailParArticle[art.nom].marge+=marge;
     });
   });
 
-  const benefTotal=benefArticles+benefRepas;
-  const exclus=db.articles.filter(a=>a.compteBenef===false);
+  const top=Object.entries(detailParArticle).sort((a,b)=>b[1].marge-a[1].marge).slice(0,5);
+
   zone.innerHTML=`
-    <div class="grid-3" style="margin-bottom:12px">
-      <div class="stat-box"><div class="stat-label">Chiffre d'affaires</div><div class="stat-value blue">${fmt(chiffreAffaires)}</div></div>
-      <div class="stat-box"><div class="stat-label">Marge articles</div><div class="stat-value green">${fmt(benefArticles)}</div></div>
-      <div class="stat-box" style="border-color:var(--accent)"><div class="stat-label">Bénéfice total estimé</div><div class="stat-value yellow">${fmt(benefTotal)}</div></div>
+    <div class="grid-2" style="margin-bottom:14px">
+      <div class="stat-box"><div class="stat-label">💰 Chiffre d'affaires</div><div class="stat-value blue">${fmt(chiffreAffaires)}</div></div>
+      <div class="stat-box" style="border-color:var(--accent)"><div class="stat-label">✨ Marge bénéficiaire</div><div class="stat-value yellow">${fmt(margeTotale)}</div><div style="font-size:10px;color:var(--text2);margin-top:4px">Prix vente − Prix achat</div></div>
     </div>
-    ${nbRepas>0?`<div style="font-size:12px;color:var(--text2);padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:8px">🥘 ${nbRepas} repas vendus · Marge repas : <strong style="color:var(--green)">${fmt(benefRepas)}</strong> (coût estimé ${fmt(coutRepas)}/repas)</div>`:''}
-    ${exclus.length>0?`<div style="font-size:11px;color:var(--text2);padding:6px 10px;background:var(--surface3);border-radius:6px">⚠️ Exclus des bénéfices : ${exclus.map(a=>a.nom).join(', ')}</div>`:''}`;
+    ${top.length>0?`
+    <div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Top contributeurs</div>
+    ${top.map(([nom,d])=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface2);border-radius:8px;margin-bottom:6px">
+        <div>
+          <div style="font-weight:600;font-size:13px">${nom}</div>
+          <div style="font-size:11px;color:var(--text2)">${d.qte} vendu${d.qte>1?'s':''}</div>
+        </div>
+        <div style="font-family:var(--font-mono);font-weight:700;color:var(--green)">${fmt(d.marge)}</div>
+      </div>`).join('')}`:'<div class="text-muted" style="text-align:center;padding:16px;font-size:13px">Aucune vente sur cette période</div>'}`;
 }
 
 // ================================================
@@ -3440,11 +3463,21 @@ function setTopArtPeriode(periode){
   renderTopArticles();
 }
 
+function getTopArtDateRange(){
+  const now=new Date();
+  if(_topArtPeriode==='mois_select'){
+    const mois=parseInt(document.getElementById('top-art-mois-select')?.value??now.getMonth());
+    return{debut:new Date(now.getFullYear(),mois,1).getTime(),fin:new Date(now.getFullYear(),mois+1,0,23,59,59).getTime()};
+  }
+  if(_topArtPeriode==='mois')return{debut:new Date(now.getFullYear(),now.getMonth(),1).getTime(),fin:Infinity};
+  return{debut:new Date(now.getFullYear(),0,1).getTime(),fin:Infinity};
+}
+
 function renderTopArticles(){
   const zone=document.getElementById('top-articles-zone');if(!zone)return;
-  const debut=getDebutPeriode(_topArtPeriode);
+  const {debut,fin}=getTopArtDateRange();
   const counts={};
-  db.historique.filter(h=>h.ts>=debut&&h.type==='vente'&&h.articles).forEach(h=>{
+  db.historique.filter(h=>h.ts>=debut&&h.ts<=fin&&h.type==='vente'&&h.articles).forEach(h=>{
     h.articles.split(', ').forEach(ligne=>{
       const match=ligne.match(/^(\d+)×\s(.+)$/);
       if(!match)return;
