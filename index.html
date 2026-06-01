@@ -1269,7 +1269,7 @@ document.getElementById('argent-immobilise').innerHTML=`
 `;
 }
 function renderAlerts(){
-const low=db.articles.filter(a=>a.type==='stock'&&a.qte!=null&&a.qte<=a.stockMin);
+const low=db.articles.filter(a=>(a.type==='stock'||!a.type)&&a.qte!=null&&a.qte<=a.stockMin);
 document.getElementById('alerts-zone').innerHTML=low.map(a=>`<div class="alert alert-warning">⚠️ Stock faible : <strong>${a.nom}</strong> — ${a.qte} restant (min: ${a.stockMin})</div>`).join('');
 }
 
@@ -2302,15 +2302,16 @@ lines.forEach(([id,v])=>{
   if(v.isFormule){
     v.formuleArticles.forEach(fl=>{
       const art=db.articles.find(a=>a.id===fl.articleId);
-      if(art&&art.type==='stock')art.qte-=fl.qte*v.qte;
+      // type undefined ou 'stock' = article en stock
+      if(art&&(art.type==='stock'||!art.type))art.qte-=fl.qte*v.qte;
     });
   }else if(v.isBoissonIncluse&&v.boissonArticleId){
-    // Boisson incluse dans repas — décompter maintenant
     const art=db.articles.find(a=>a.id===v.boissonArticleId);
-    if(art&&art.type==='stock')art.qte-=v.qte;
-  }else if(!v.isPrestation&&!v.isRepas&&!v.isSupplBoisson&&!v.isBoissonIncluse){
+    if(art&&(art.type==='stock'||!art.type))art.qte-=v.qte;
+  }else if(!v.isPrestation&&!v.isRepas&&!v.isSupplBoisson&&!v.isBoissonIncluse&&!v.isFormule){
     const art=db.articles.find(a=>a.id===id);
-    if(art&&art.type==='stock')art.qte-=v.qte;
+    // Décrémenter si article de type stock (ou sans type = ancien article)
+    if(art&&(art.type==='stock'||!art.type))art.qte-=v.qte;
   }
 });
 }
