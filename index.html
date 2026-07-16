@@ -184,54 +184,28 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--surface2);}
 <!-- DASHBOARD -->
 
 <div class="page active" id="page-dashboard">
-<div id="alerts-zone"></div>
-<div class="grid-4 mb-16" id="dashboard-stats"></div>
 <div id="dettes-detail-zone"></div>
+<div class="grid-4 mb-16" id="dashboard-stats"></div>
 <div class="grid-2">
 <div class="card"><div class="card-title">💰 Caisse & Compte</div><div id="caisse-summary"></div></div>
 <div class="card"><div class="card-title">📦 Stock valorisé</div><div id="stock-summary"></div></div>
 </div>
 <div class="card"><div class="card-title">📊 Vue d'ensemble — Cartes & Stock</div><div id="argent-immobilise"></div></div>
-<div class="card"><div class="card-title">📋 Dernières transactions</div><div id="recent-history"></div></div>
 <div class="card">
   <div class="flex-between" style="margin-bottom:14px">
     <div class="card-title" style="margin:0">🏆 Top consommateurs carte Popote</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select class="form-select" id="top-mois-select" style="width:130px" onchange="setTopPeriode('mois_select')">
-        <option value="0">Janvier</option>
-        <option value="1">Février</option>
-        <option value="2">Mars</option>
-        <option value="3">Avril</option>
-        <option value="4">Mai</option>
-        <option value="5">Juin</option>
-        <option value="6">Juillet</option>
-        <option value="7">Août</option>
-        <option value="8">Septembre</option>
-        <option value="9">Octobre</option>
-        <option value="10">Novembre</option>
-        <option value="11">Décembre</option>
+        <option value="0">Janvier</option><option value="1">Février</option><option value="2">Mars</option>
+        <option value="3">Avril</option><option value="4">Mai</option><option value="5">Juin</option>
+        <option value="6">Juillet</option><option value="7">Août</option><option value="8">Septembre</option>
+        <option value="9">Octobre</option><option value="10">Novembre</option><option value="11">Décembre</option>
       </select>
       <button class="btn btn-secondary btn-sm" id="top-periode-mois" onclick="setTopPeriode('mois')" style="background:var(--accent);color:#000">Ce mois</button>
       <button class="btn btn-secondary btn-sm" id="top-periode-annee" onclick="setTopPeriode('annee')">Cette année</button>
     </div>
   </div>
   <div id="top-clients-zone"></div>
-</div>
-<div class="card">
-  <div class="flex-between" style="margin-bottom:14px">
-    <div class="card-title" style="margin:0">📈 Bénéfice estimé</div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <select class="form-select" id="benef-mois-select" style="width:130px" onchange="setBenefPeriode('mois_select')">
-        <option value="0">Janvier</option><option value="1">Février</option><option value="2">Mars</option>
-        <option value="3">Avril</option><option value="4">Mai</option><option value="5">Juin</option>
-        <option value="6">Juillet</option><option value="7">Août</option><option value="8">Septembre</option>
-        <option value="9">Octobre</option><option value="10">Novembre</option><option value="11">Décembre</option>
-      </select>
-      <button class="btn btn-secondary btn-sm" id="benef-periode-mois" onclick="setBenefPeriode('mois')" style="background:var(--accent);color:#000">Ce mois</button>
-      <button class="btn btn-secondary btn-sm" id="benef-periode-annee" onclick="setBenefPeriode('annee')">Cette année</button>
-    </div>
-  </div>
-  <div id="benef-zone"></div>
 </div>
 <div class="card">
   <div class="flex-between" style="margin-bottom:14px">
@@ -311,13 +285,12 @@ Appuie pour ajouter au ticket ↓
 <div class="flex-between mb-16">
 <div class="card-title" style="margin:0">📦 Stock</div>
 <div class="flex gap-8">
-<button class="btn btn-secondary" onclick="openCoursesModal()">🛍️ Courses</button>
-<button class="btn btn-secondary" onclick="openModal('modal-categories')">🏷️ Catégories</button>
+<button class="btn btn-secondary" onclick="ouvrirCoursesAlerte()">🛒 Courses</button>
+<button class="btn btn-secondary" onclick="demanderPin(()=>openModal('modal-categories'))">🏷️ Catégories 🔒</button>
 <button class="btn btn-secondary" onclick="openModal('modal-formules')">🍽️ Formules</button>
-<button class="btn btn-primary" onclick="openModal('modal-new-article')">+ Article</button>
+<button class="btn btn-primary" onclick="demanderPin(()=>openModal('modal-new-article'))">+ Article 🔒</button>
 </div>
 </div>
-<div id="stock-alerts"></div>
 <div class="cats-bar" id="stock-cats-bar"></div>
 <div class="card">
 <div class="search-bar">
@@ -336,46 +309,16 @@ Appuie pour ajouter au ticket ↓
 
 <div class="page" id="page-caisse">
 <div class="card-title">💰 Caisse</div>
-
-<!-- Stats globales -->
-<div class="grid-4 mb-16" id="caisse-stats"></div>
-
-<!-- Caisse Popote + Coffre -->
+<div class="grid-3 mb-16" id="caisse-stats"></div>
 <div class="grid-2">
   <div class="card" style="border-color:var(--accent)">
-    <div class="card-title">💵 Caisse Popote <span style="font-size:11px;color:var(--text2);font-weight:400">(espèces disponibles)</span></div>
+    <div class="card-title">💵 Caisse Popote <span style="font-size:11px;color:var(--text2);font-weight:400">(espèces)</span></div>
     <div id="caisse-liquide-detail"></div>
   </div>
-  <div class="card" style="border-color:var(--blue)">
-    <div class="card-title">🔐 Coffre <span style="font-size:11px;color:var(--text2);font-weight:400">(réserve sécurisée)</span></div>
-    <div id="caisse-coffre-detail"></div>
+  <div class="card">
+    <div class="card-title">💳 Compte CB</div>
+    <div id="caisse-compte-detail"></div>
   </div>
-</div>
-
-<!-- Transfert Caisse ↔ Coffre -->
-<div class="card" style="border-color:var(--purple)">
-  <div class="card-title">🔄 Transfert Caisse Popote ↔ Coffre 🔒</div>
-  <div class="grid-2">
-    <div>
-      <div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" id="transfert-montant" placeholder="0.00" step="0.01"></div>
-      <div class="form-group"><label class="form-label">Sens du transfert</label>
-        <select class="form-select" id="transfert-sens">
-          <option value="caisse_vers_coffre">💵 Caisse → 🔐 Coffre (mise en sécurité)</option>
-          <option value="coffre_vers_caisse">🔐 Coffre → 💵 Caisse (réapprovisionnement)</option>
-        </select>
-      </div>
-      <div class="form-group"><label class="form-label">Motif (optionnel)</label><input class="form-input" type="text" id="transfert-motif" placeholder="Ex: bénéfice semaine..."></div>
-    </div>
-    <div style="display:flex;align-items:flex-end">
-      <button class="btn btn-primary" onclick="transfertCaisseSecure()" style="width:100%;justify-content:center">🔄 Transférer 🔒</button>
-    </div>
-  </div>
-</div>
-
-<!-- Compte CB -->
-<div class="card">
-  <div class="card-title">💳 Compte CB</div>
-  <div id="caisse-compte-detail"></div>
 </div>
 
 <!-- Rentrée d'argent -->
@@ -388,7 +331,6 @@ Appuie pour ajouter au ticket ↓
       <div class="form-group"><label class="form-label">Destination</label>
         <select class="form-select" id="rentree-source">
           <option value="espece">💵 Caisse Popote (espèces)</option>
-          <option value="coffre">🔐 Coffre</option>
           <option value="carte">💳 Compte bancaire</option>
         </select>
       </div>
@@ -409,7 +351,6 @@ Appuie pour ajouter au ticket ↓
       <div class="form-group"><label class="form-label">Source</label>
         <select class="form-select" id="sortie-source">
           <option value="espece">💵 Caisse Popote (espèces)</option>
-          <option value="coffre">🔐 Coffre</option>
           <option value="carte">💳 Compte bancaire</option>
         </select>
       </div>
@@ -748,13 +689,6 @@ Appuie pour ajouter au ticket ↓
 <div class="form-group"><label class="form-label">Catégorie</label>
 <select class="form-select" id="na-categorie"><option value="">-- Sans catégorie --</option></select>
 </div>
-<div class="form-group" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:12px">
-<input type="checkbox" id="na-benef" checked style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
-<div>
-<label for="na-benef" style="font-weight:600;cursor:pointer">Compter dans les bénéfices</label>
-<div style="font-size:11px;color:var(--text2);margin-top:2px">Décocher pour les articles offerts, café, etc.</div>
-</div>
-</div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="closeModal('modal-new-article')">Annuler</button>
 <button class="btn btn-primary" onclick="createArticle()">Créer</button>
@@ -801,13 +735,6 @@ Appuie pour ajouter au ticket ↓
 </div>
 <div class="form-group"><label class="form-label">Catégorie</label>
 <select class="form-select" id="ea-categorie"><option value="">-- Sans catégorie --</option></select>
-</div>
-<div class="form-group" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:12px">
-<input type="checkbox" id="ea-benef" checked style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
-<div>
-<label for="ea-benef" style="font-weight:600;cursor:pointer">Compter dans les bénéfices</label>
-<div style="font-size:11px;color:var(--text2);margin-top:2px">Décocher pour les articles offerts, café, etc.</div>
-</div>
 </div>
 <div class="modal-actions">
 <button class="btn btn-secondary" onclick="closeModal('modal-edit-article')">Annuler</button>
@@ -943,17 +870,39 @@ Appuie pour ajouter au ticket ↓
 </div>
 </div>
 
+<!-- Modal alerte stock faible / courses -->
+<div class="modal-overlay" id="modal-courses-alerte">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-title">🛒 Articles en stock faible</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Articles à racheter pour réapprovisionner</div>
+    <div id="courses-alerte-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-courses-alerte')">Fermer</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-courses-alerte');demanderPin(()=>openCoursesModal())">🛍️ Faire les courses 🔒</button>
+    </div>
+  </div>
+</div>
+
 <!-- Courses -->
 
 <div class="modal-overlay" id="modal-courses">
 <div class="modal" style="max-width:600px">
 <div class="modal-title">🛍️ Enregistrer des courses</div>
+<!-- Paiement principal -->
 <div class="form-group"><label class="form-label">Montant total (€)</label><input class="form-input" type="number" id="courses-montant" placeholder="0.00" step="0.01"></div>
 <div class="form-group"><label class="form-label">Payé avec</label>
-<select class="form-select" id="courses-paiement">
-<option value="espece">💵 Espèces</option>
-<option value="carte">💳 Carte bancaire</option>
-</select>
+  <select class="form-select" id="courses-paiement">
+    <option value="espece">💵 Espèces uniquement</option>
+    <option value="carte">💳 Carte bancaire uniquement</option>
+    <option value="mixte">💵+💳 Mixte (espèces + carte)</option>
+  </select>
+</div>
+<!-- Paiement mixte -->
+<div id="courses-mixte-zone" style="display:none">
+  <div class="grid-2">
+    <div class="form-group"><label class="form-label">Montant espèces (€)</label><input class="form-input" type="number" id="courses-montant-espece" placeholder="0.00" step="0.01"></div>
+    <div class="form-group"><label class="form-label">Montant carte (€)</label><input class="form-input" type="number" id="courses-montant-carte" placeholder="0.00" step="0.01"></div>
+  </div>
 </div>
 <div class="form-group"><label class="form-label">Note (optionnel)</label><input class="form-input" id="courses-note" placeholder="Ex: Supermarché, marché..."></div>
 <hr class="divider">
@@ -1052,6 +1001,36 @@ Appuie pour ajouter au ticket ↓
 
 <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="closeModal('modal-debord-carte');_debordEnCours=null;">Annuler</button>
 </div>
+</div>
+
+<!-- Proposer nouvelle carte quand client n'en a pas -->
+<div class="modal-overlay" id="modal-proposer-carte">
+  <div class="modal" style="max-width:400px;text-align:center">
+    <div style="font-size:36px;margin-bottom:10px">🍲</div>
+    <div class="modal-title" style="justify-content:center">Ce client n'a pas de carte active</div>
+    <div id="proposer-carte-info" style="color:var(--text2);margin-bottom:20px;font-size:14px"></div>
+    <div class="form-label" style="margin-bottom:10px">Ouvrir une nouvelle carte ? (10 €)</div>
+    <div class="paiement-choix" id="proposer-carte-paiement">
+      <div class="paiement-card" onclick="selectProposerCartePaiement('espece')" data-mode="espece"><div class="pc-icon">💵</div><div class="pc-label">Espèces</div></div>
+      <div class="paiement-card" onclick="selectProposerCartePaiement('carte')" data-mode="carte"><div class="pc-icon">💳</div><div class="pc-label">CB</div></div>
+      <div class="paiement-card" onclick="selectProposerCartePaiement('dette')" data-mode="dette"><div class="pc-icon">🔖</div><div class="pc-label">À dette</div></div>
+    </div>
+    <div class="modal-actions" style="justify-content:center;margin-top:16px;flex-direction:column;gap:10px">
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="validerProposerCarte()">🍲 Ouvrir et encaisser</button>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="closeModal('modal-proposer-carte')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- Supprimer une carte popote -->
+<div class="modal-overlay" id="modal-supprimer-carte">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">🗑️ Supprimer une carte Popote 🔒</div>
+    <div id="supprimer-carte-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-supprimer-carte')">Fermer</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -1175,13 +1154,13 @@ function renderDettesDetail(clientsEnDette){
 
 function renderDashboard(){
 renderAlerts();
-const total=db.caisse.liquide+db.caisse.compte+(db.caisse.coffre||0);
+const total=db.caisse.liquide+db.caisse.compte;
 let dettes=0;db.clients.forEach(c=>dettes+=c.dette||0);
 const clientsEnDette=db.clients.filter(c=>c.dette>0).sort((a,b)=>b.dette-a.dette);
 document.getElementById('dashboard-stats').innerHTML=`
-<div class="stat-box"><div class="stat-label">Total général</div><div class="stat-value yellow">${fmt(total)}</div></div>
+<div class="stat-box"><div class="stat-label">Total caisse</div><div class="stat-value yellow">${fmt(total)}</div></div>
 <div class="stat-box"><div class="stat-label">💵 Caisse Popote</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
-<div class="stat-box"><div class="stat-label">🔐 Coffre</div><div class="stat-value blue">${fmt(db.caisse.coffre||0)}</div></div>
+<div class="stat-box"><div class="stat-label">💳 Compte CB</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
 <div class="stat-box" style="cursor:pointer" onclick="toggleDettesDetail()">
   <div class="stat-label">Dettes clients ${clientsEnDette.length>0?`(${clientsEnDette.length})`:''}▾</div>
   <div class="stat-value red">${fmt(dettes)}</div>
@@ -1203,8 +1182,8 @@ document.getElementById('stock-summary').innerHTML=`
 <div class="stat-box mb-16"><div class="stat-label">Valeur vente</div><div class="stat-value blue">${fmt(vV)}</div></div>
 <div class="stat-box"><div class="stat-label">Marge potentielle</div><div class="stat-value green">${fmt(vV-vA)}</div></div>`;
 renderArgentImmobilise();
-const recent=[...db.historique].reverse().slice(0,8);
-document.getElementById('recent-history').innerHTML=recent.length?recent.map(histHTML).join(''):'<div class="text-muted" style="padding:16px;text-align:center">Aucune transaction</div>';
+const recentEl=document.getElementById('recent-history');
+if(recentEl){const recent=[...db.historique].reverse().slice(0,8);recentEl.innerHTML=recent.length?recent.map(histHTML).join(''):'<div class="text-muted" style="padding:16px;text-align:center">Aucune transaction</div>';}
 // Présélectionner le mois en cours
 const selMois=document.getElementById('top-mois-select');
 if(selMois&&!selMois._init){selMois.value=new Date().getMonth();selMois._init=true;}
@@ -1226,8 +1205,10 @@ client.cartes.forEach(carte=>{
 if(carte.statut==='active'||carte.statut==='en_attente'){
 const restant=carteRestant(carte);
 if(restant>0){
-if(carte.paiementOuverture==='dette') casesDetteValeur+=restant;
-else casesPayeesValeur+=restant;
+// Carte à dette ET la dette du client existe encore = pas encore payée
+const detteNonPayee=carte.paiementOuverture==='dette'&&(client.dette||0)>0;
+if(detteNonPayee)casesDetteValeur+=restant;
+else casesPayeesValeur+=restant; // payée (espèce/CB) OU dette remboursée = service dû
 }
 }
 });
@@ -1235,9 +1216,9 @@ else casesPayeesValeur+=restant;
 
 let stockAchat=0,stockVente=0;
 db.articles.forEach(a=>{
-if(a.type==='stock'&&a.qte>0){
-stockAchat+=a.qte*a.prixAchat;
-stockVente+=a.qte*a.prixVente;
+if((a.type==='stock'||!a.type)&&(a.qte||0)>0){
+stockAchat+=(a.qte||0)*(a.prixAchat||0);
+stockVente+=(a.qte||0)*(a.prixVente||0);
 }
 });
 const margeStock=stockVente-stockAchat;
@@ -1269,8 +1250,6 @@ document.getElementById('argent-immobilise').innerHTML=`
 `;
 }
 function renderAlerts(){
-const low=db.articles.filter(a=>(a.type==='stock'||!a.type)&&a.qte!=null&&a.qte<=a.stockMin);
-document.getElementById('alerts-zone').innerHTML=low.map(a=>`<div class="alert alert-warning">⚠️ Stock faible : <strong>${a.nom}</strong> — ${a.qte} restant (min: ${a.stockMin})</div>`).join('');
 }
 
 // ================================================
@@ -1400,12 +1379,12 @@ toast('✅ Client mis à jour');
 function deleteClientEnCours(){
 const id=document.getElementById('ec-id').value;
 if(!id){toast('❌ Erreur : aucun client sélectionné');return;}
-// Utiliser un modal de confirmation custom plutôt que confirm() bloqué sur Android
 const client=db.clients.find(c=>c.id===id);
 if(!client){toast('❌ Client introuvable');return;}
 _clientASupprimer=id;
 document.getElementById('confirm-delete-nom').textContent=client.nom;
-openModal('modal-confirm-delete');
+closeModal('modal-edit-client');
+setTimeout(()=>openModal('modal-confirm-delete'),200);
 }
 
 let _clientASupprimer=null;
@@ -1475,7 +1454,10 @@ const dette=client.dette||0;
 const ca=client.cartes.find(c=>c.statut==='active');
 let html='';
 if(dette>0)html+=`<div class="alert alert-danger">Dette : <strong>${fmt(dette)}</strong><div style="margin-top:8px"><button class="btn btn-primary btn-sm" onclick="openPaiementDette('${clientId}')">💳 Régler</button></div></div>`;
-html+=`<div style="margin-bottom:14px"><button class="btn btn-green btn-sm" onclick="ouvrirNouvelleCarteModal('${clientId}')">🍲 Ouvrir nouvelle carte Popote</button></div>`;
+html+=`<div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-green btn-sm" onclick="ouvrirNouvelleCarteModal('${clientId}')">🍲 Ouvrir nouvelle carte Popote</button>
+<button class="btn btn-danger btn-sm" onclick="ouvrirSupprimerCarte('${clientId}')">🗑️ Supprimer une carte 🔒</button>
+</div>`;
 if(ca){
 html+=`<div class="section-title">Carte active</div>
 <div class="popote-card-visual">
@@ -1776,7 +1758,7 @@ infoEl.innerHTML=`<div class="alert alert-warning" style="margin-top:6px;font-si
 }
 }
 
-function venteSelectClient(){} // compatibilité
+function venteSelectClient(){} // stub
 
 function renderVenteCatsBar(){
 const bar=document.getElementById('vente-cats-bar');
@@ -2107,7 +2089,6 @@ _ventePaiement=mode;
 document.querySelectorAll('.ticket-paiement-btns .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));
 }
 
-function venteSelectClient(){} // stub - replaced by grade picker
 
 function renderTicket(){
 const lines=Object.entries(venteArticles);
@@ -2141,16 +2122,10 @@ linesEl.innerHTML=lines.map(([id,v])=>`
   ${v.isSupplBoisson?`
   <div style="width:100%;margin-top:8px">
     <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">Comment encaisser ce supplément ?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-      <button onclick="setSupplMode('${id}','carte_popote')" style="padding:10px 6px;border-radius:8px;border:2px solid ${v.supplMode==='carte_popote'?'var(--accent)':'var(--border)'};background:${v.supplMode==='carte_popote'?'var(--accent)':'var(--surface3)'};color:${v.supplMode==='carte_popote'?'#000':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;text-align:center">
-        🍲<br>Carte
-      </button>
-      <button onclick="setSupplMode('${id}','espece')" style="padding:10px 6px;border-radius:8px;border:2px solid ${v.supplMode==='espece'?'var(--accent)':'var(--border)'};background:${v.supplMode==='espece'?'var(--accent)':'var(--surface3)'};color:${v.supplMode==='espece'?'#000':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;text-align:center">
-        💵<br>Espèces
-      </button>
-      <button onclick="setSupplMode('${id}','carte')" style="padding:10px 6px;border-radius:8px;border:2px solid ${v.supplMode==='carte'?'var(--accent)':'var(--border)'};background:${v.supplMode==='carte'?'var(--accent)':'var(--surface3)'};color:${v.supplMode==='carte'?'#000':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;text-align:center">
-        💳<br>CB
-      </button>
+    <div style="display:grid;grid-template-columns:${_venteClientId?'1fr 1fr 1fr':'1fr 1fr'};gap:6px">
+      ${_venteClientId?`<button onclick="setSupplMode('${id}','carte_popote')" style="padding:10px 6px;border-radius:8px;border:2px solid ${v.supplMode==='carte_popote'?'var(--accent)':'var(--border)'};background:${v.supplMode==='carte_popote'?'var(--accent)':'var(--surface3)'};color:${v.supplMode==='carte_popote'?'#000':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;text-align:center">🍲<br>Carte</button>`:''}
+      <button onclick="setSupplMode('${id}','espece')" style="padding:10px 6px;border-radius:8px;border:2px solid ${v.supplMode==='espece'?'var(--accent)':'var(--border)'};background:${v.supplMode==='espece'?'var(--accent)':'var(--surface3)'};color:${v.supplMode==='espece'?'#000':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;text-align:center">💵<br>Espèces</button>
+      <button onclick="setSupplMode('${id}','carte')" style="padding:10px 6px;border-radius:8px;border:2px solid ${v.supplMode==='carte'?'var(--accent)':'var(--border)'};background:${v.supplMode==='carte'?'var(--accent)':'var(--surface3)'};color:${v.supplMode==='carte'?'#000':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;text-align:center">💳<br>CB</button>
     </div>
   </div>`:''}
 </div>`).join('');
@@ -2218,7 +2193,11 @@ const nomLabel=client?client.nom:'Vente libre';
 
 if(_ventePaiement==='carte_popote'){
   const ca=client.cartes.find(c=>c.statut==='active');
-  if(!ca){toast('❌ Ce client n\'a pas de carte active');return;}
+  if(!ca){
+    // Pas de carte active — proposer d'en ouvrir une
+    proposerNouvelleCarte(clientId,totalSansSuppl);
+    return;
+  }
   const libres=carteCasesLibres(ca);
   const casesNecessaires=Math.round(totalSansSuppl/CASE_VAL);
 
@@ -2573,10 +2552,6 @@ let f=db.articles.filter(a=>a.nom.toLowerCase().includes(s));
 if(_stockCatFiltre===null){}
 else if(_stockCatFiltre==='__none')f=f.filter(a=>!a.categorieId);
 else f=f.filter(a=>a.categorieId===_stockCatFiltre);
-// Alertes uniquement pour les articles en stock
-document.getElementById('stock-alerts').innerHTML=db.articles
-.filter(a=>a.type==='stock'&&a.qte<=a.stockMin)
-.map(a=>`<div class="alert alert-warning">⚠️ <strong>${a.nom}</strong> — ${a.qte} restant (min: ${a.stockMin})</div>`).join('');
 const tbody=document.getElementById('stock-tbody');
 if(!f.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:24px">Aucun article</td></tr>';return;}
 tbody.innerHTML=f.map(a=>{
@@ -2620,17 +2595,19 @@ unite:isStock?(document.getElementById('na-unite').value.trim()):'',
 categorieId:document.getElementById('na-categorie').value||null,
 type:_naType,
 plafondBoisson:isRepas?(parseFloat(document.getElementById('na-plafond').value)||0.75):null,
-compteBenef:document.getElementById('na-benef').checked,
+compteBenef:true,
 });
 saveDB();closeModal('modal-new-article');
 ['na-nom','na-achat','na-vente','na-qte','na-min','na-unite'].forEach(id=>document.getElementById(id).value='');
 document.getElementById('na-categorie').value='';
 document.getElementById('na-plafond').value='0.75';
-document.getElementById('na-benef').checked=true;
 _naType='stock';selectTypeArticle('stock');
 renderStock();toast(`✅ Article créé`);
 }
 function editArticle(id){
+  demanderPin(()=>_ouvrirEditArticle(id));
+}
+function _ouvrirEditArticle(id){
 const a=db.articles.find(x=>x.id===id);if(!a)return;
 updateCategorieSelects();
 _eaType=a.type||'stock';
@@ -2643,7 +2620,6 @@ document.getElementById('ea-min').value=a.stockMin||0;
 document.getElementById('ea-unite').value=a.unite||'';
 document.getElementById('ea-plafond').value=a.plafondBoisson||0.75;
 document.getElementById('ea-categorie').value=a.categorieId||'';
-document.getElementById('ea-benef').checked=a.compteBenef!==false; // true par défaut
 selectTypeArticleEdit(_eaType);
 openModal('modal-edit-article');
 }
@@ -2654,7 +2630,6 @@ a.nom=document.getElementById('ea-nom').value.trim();
 a.prixAchat=parseFloat(document.getElementById('ea-achat').value)||0;
 a.prixVente=parseFloat(document.getElementById('ea-vente').value);
 a.type=_eaType;
-a.compteBenef=document.getElementById('ea-benef').checked;
 if(_eaType==='stock'){
 a.qte=parseInt(document.getElementById('ea-qte').value)||0;
 a.stockMin=parseInt(document.getElementById('ea-min').value)||0;
@@ -2672,9 +2647,11 @@ if(document.getElementById('page-vente').classList.contains('active')){renderVen
 toast('✅ Article mis à jour');
 }
 function deleteArticle(id){
-if(!confirm('Supprimer ?'))return;
-db.articles=db.articles.filter(a=>a.id!==id);
-saveDB();renderStock();toast('✅ Supprimé');
+  const art=db.articles.find(a=>a.id===id);if(!art)return;
+  demanderPin(()=>{
+    db.articles=db.articles.filter(a=>a.id!==id);
+    saveDB();renderStock();toast('✅ Article supprimé');
+  });
 }
 
 // ================================================
@@ -2705,53 +2682,54 @@ return`<div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;bac
 </div>`;}).join('');
 }
 function validerCourses(){
-const montant=parseFloat(document.getElementById('courses-montant').value);
 const paiement=document.getElementById('courses-paiement').value;
 const note=document.getElementById('courses-note').value.trim();
-if(isNaN(montant)||montant<=0){toast('❌ Montant invalide');return;}
-if(paiement==='espece'&&db.caisse.liquide<montant){toast('❌ Espèces insuffisantes');return;}
-if(paiement==='carte'&&db.caisse.compte<montant){toast('❌ Compte insuffisant');return;}
-if(paiement==='espece')db.caisse.liquide-=montant;else db.caisse.compte-=montant;
 const an=[];
 coursesLines.forEach(l=>{if(!l.articleId||!l.qte)return;const art=db.articles.find(a=>a.id===l.articleId);if(art){art.qte+=l.qte;an.push(`+${l.qte} ${art.nom}`);}});
-addHistorique({type:'courses',label:`Courses — ${note||'Approvisionnement'}`,montant:-montant,paiement,note:an.join(', ')||'Pas de stock mis à jour'});
-saveDB();closeModal('modal-courses');coursesLines=[];renderStock();
-toast(`✅ Courses de ${fmt(montant)} enregistrées`);
+
+if(paiement==='mixte'){
+  const montantE=parseFloat(document.getElementById('courses-montant-espece').value)||0;
+  const montantC=parseFloat(document.getElementById('courses-montant-carte').value)||0;
+  const total=montantE+montantC;
+  if(total<=0){toast('❌ Montants invalides');return;}
+  if(montantE>0&&db.caisse.liquide<montantE){toast('❌ Espèces insuffisantes');return;}
+  if(montantC>0&&db.caisse.compte<montantC){toast('❌ Compte insuffisant');return;}
+  if(montantE>0)db.caisse.liquide-=montantE;
+  if(montantC>0)db.caisse.compte-=montantC;
+  addHistorique({type:'courses',label:`Courses — ${note||'Approvisionnement'}`,montant:-total,paiement:'mixte',note:`${fmt(montantE)} espèces + ${fmt(montantC)} CB · ${an.join(', ')}`});
+  saveDB();closeModal('modal-courses');coursesLines=[];renderStock();
+  toast(`✅ Courses de ${fmt(total)} enregistrées (paiement mixte)`);
+}else{
+  const montant=parseFloat(document.getElementById('courses-montant').value);
+  if(isNaN(montant)||montant<=0){toast('❌ Montant invalide');return;}
+  if(paiement==='espece'&&db.caisse.liquide<montant){toast('❌ Espèces insuffisantes');return;}
+  if(paiement==='carte'&&db.caisse.compte<montant){toast('❌ Compte insuffisant');return;}
+  if(paiement==='espece')db.caisse.liquide-=montant;else db.caisse.compte-=montant;
+  addHistorique({type:'courses',label:`Courses — ${note||'Approvisionnement'}`,montant:-montant,paiement,note:an.join(', ')});
+  saveDB();closeModal('modal-courses');coursesLines=[];renderStock();
+  toast(`✅ Courses de ${fmt(montant)} enregistrées`);
+}
 }
 
 // ================================================
 // CAISSE
 // ================================================
 function renderCaisse(){
-  const coffre=db.caisse.coffre||0;
-  const total=db.caisse.liquide+db.caisse.compte+coffre;
+  const total=db.caisse.liquide+db.caisse.compte;
   document.getElementById('caisse-stats').innerHTML=`
-    <div class="stat-box"><div class="stat-label">Total général</div><div class="stat-value yellow">${fmt(total)}</div></div>
+    <div class="stat-box"><div class="stat-label">Total</div><div class="stat-value yellow">${fmt(total)}</div></div>
     <div class="stat-box" style="border-color:var(--accent)"><div class="stat-label">💵 Caisse Popote</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
-    <div class="stat-box" style="border-color:var(--blue)"><div class="stat-label">🔐 Coffre</div><div class="stat-value blue">${fmt(coffre)}</div></div>
     <div class="stat-box"><div class="stat-label">💳 Compte CB</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>`;
 
-  // Caisse Popote
   const mouvL=db.historique.filter(h=>h.paiement==='espece').reverse().slice(0,10);
   document.getElementById('caisse-liquide-detail').innerHTML=`
-    <div class="stat-box mb-16"><div class="stat-label">Solde caisse</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
+    <div class="stat-box mb-16"><div class="stat-label">Solde</div><div class="stat-value green">${fmt(db.caisse.liquide)}</div></div>
     ${mouvL.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
       <div><div>${h.label}</div><div style="color:var(--text2);font-size:11px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div></div>
       <div class="mono ${h.montant>=0?'text-green':'text-red'}">${h.montant>=0?'+':''}${fmt(Math.abs(h.montant))}</div>
     </div>`).join('')}
     ${!mouvL.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
 
-  // Coffre
-  const mouvCoffre=db.historique.filter(h=>h.paiement==='coffre').reverse().slice(0,10);
-  document.getElementById('caisse-coffre-detail').innerHTML=`
-    <div class="stat-box mb-16" style="border-color:var(--blue)"><div class="stat-label">Solde coffre</div><div class="stat-value blue">${fmt(coffre)}</div></div>
-    ${mouvCoffre.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
-      <div><div>${h.label}</div><div style="color:var(--text2);font-size:11px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div></div>
-      <div class="mono ${h.montant>=0?'text-green':'text-red'}">${h.montant>=0?'+':''}${fmt(Math.abs(h.montant))}</div>
-    </div>`).join('')}
-    ${!mouvCoffre.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
-
-  // Compte CB
   const mouvC=db.historique.filter(h=>h.paiement==='carte'||h.paiement==='carte_bancaire').reverse().slice(0,10);
   document.getElementById('caisse-compte-detail').innerHTML=`
     <div class="stat-box mb-16"><div class="stat-label">Solde compte</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
@@ -2762,43 +2740,17 @@ function renderCaisse(){
     ${!mouvC.length?'<div class="text-muted" style="font-size:12px">Aucun mouvement</div>':''}`;
 }
 
-function transfertCaisseSecure(){demanderPin(()=>transfertCaisse());}
-function transfertCaisse(){
-  const montant=parseFloat(document.getElementById('transfert-montant').value);
-  const sens=document.getElementById('transfert-sens').value;
-  const motif=document.getElementById('transfert-motif').value.trim()||'Transfert';
-  if(!montant||montant<=0){toast('❌ Montant invalide');return;}
-  if(!db.caisse.coffre)db.caisse.coffre=0;
-  if(sens==='caisse_vers_coffre'){
-    if(db.caisse.liquide<montant){toast('❌ Caisse insuffisante');return;}
-    db.caisse.liquide-=montant;
-    db.caisse.coffre+=montant;
-    addHistorique({type:'transfert',label:`Transfert caisse → coffre — ${motif}`,montant:-montant,paiement:'espece',note:`Vers coffre: ${fmt(montant)}`});
-    addHistorique({type:'transfert',label:`Transfert caisse → coffre — ${motif}`,montant:montant,paiement:'coffre',note:`Depuis caisse: ${fmt(montant)}`});
-    toast(`✅ ${fmt(montant)} transféré vers le coffre`);
-  }else{
-    if(db.caisse.coffre<montant){toast('❌ Coffre insuffisant');return;}
-    db.caisse.coffre-=montant;
-    db.caisse.liquide+=montant;
-    addHistorique({type:'transfert',label:`Transfert coffre → caisse — ${motif}`,montant:-montant,paiement:'coffre',note:`Vers caisse: ${fmt(montant)}`});
-    addHistorique({type:'transfert',label:`Transfert coffre → caisse — ${motif}`,montant:montant,paiement:'espece',note:`Depuis coffre: ${fmt(montant)}`});
-    toast(`✅ ${fmt(montant)} sorti du coffre vers la caisse`);
-  }
-  document.getElementById('transfert-montant').value='';
-  document.getElementById('transfert-motif').value='';
-  saveDB();renderCaisse();
-}
+function transfertCaisseSecure(){}
+function transfertCaisse(){}
 function rentreeCaisse(){
   const montant=parseFloat(document.getElementById('rentree-montant').value);
   const motif=document.getElementById('rentree-motif').value.trim();
   const dest=document.getElementById('rentree-source').value;
   if(!montant||montant<=0){toast('❌ Montant invalide');return;}
   if(!motif){toast('❌ Précise le motif');return;}
-  if(!db.caisse.coffre)db.caisse.coffre=0;
   if(dest==='espece')db.caisse.liquide+=montant;
-  else if(dest==='coffre')db.caisse.coffre+=montant;
   else db.caisse.compte+=montant;
-  const destLbl={espece:'💵 Caisse Popote',coffre:'🔐 Coffre',carte:'💳 Compte'};
+  const destLbl={espece:'💵 Caisse Popote',carte:'💳 Compte'};
   addHistorique({type:'rentree',label:`Rentrée — ${motif}`,montant,paiement:dest,note:destLbl[dest]||dest});
   saveDB();renderCaisse();
   document.getElementById('rentree-montant').value='';document.getElementById('rentree-motif').value='';
@@ -2810,14 +2762,11 @@ function sortieCaisse(){
   const source=document.getElementById('sortie-source').value;
   if(!montant||montant<=0){toast('❌ Montant invalide');return;}
   if(!motif){toast('❌ Précise le motif');return;}
-  if(!db.caisse.coffre)db.caisse.coffre=0;
   if(source==='espece'&&db.caisse.liquide<montant){toast('❌ Caisse insuffisante');return;}
-  if(source==='coffre'&&db.caisse.coffre<montant){toast('❌ Coffre insuffisant');return;}
   if(source==='carte'&&db.caisse.compte<montant){toast('❌ Compte insuffisant');return;}
   if(source==='espece')db.caisse.liquide-=montant;
-  else if(source==='coffre')db.caisse.coffre-=montant;
   else db.caisse.compte-=montant;
-  const srcLbl={espece:'💵 Caisse Popote',coffre:'🔐 Coffre',carte:'💳 Compte'};
+  const srcLbl={espece:'💵 Caisse Popote',carte:'💳 Compte'};
   addHistorique({type:'sortie',label:`Sortie — ${motif}`,montant:-montant,paiement:source,note:srcLbl[source]||source});
   saveDB();renderCaisse();
   document.getElementById('sortie-montant').value='';document.getElementById('sortie-motif').value='';
@@ -2830,26 +2779,48 @@ function sortieCaisse(){
 function addHistorique(data){db.historique.push({id:uid(),ts:Date.now(),...data});}
 
 const TYPE_CFG={
-vente:{icon:'🛒',color:'var(--green)'},
-achat_carte:{icon:'🍲',color:'var(--accent)'},
-paiement_dette:{icon:'💳',color:'var(--blue)'},
-courses:{icon:'🛍️',color:'var(--red)'},
-sortie:{icon:'📤',color:'var(--red)'},
-rentree:{icon:'📥',color:'var(--green)'},
+  vente:      {icon:'🛒', color:'var(--green)',  label:'Vente'},
+  achat_carte:{icon:'🍲', color:'var(--accent)', label:'Carte Popote'},
+  paiement_dette:{icon:'💰',color:'var(--blue)', label:'Paiement dette'},
+  courses:    {icon:'🛍️', color:'#f97316',       label:'Courses'},
+  sortie:     {icon:'📤', color:'var(--red)',    label:'Sortie'},
+  rentree:    {icon:'📥', color:'var(--green)',  label:'Rentrée'},
+  transfert:  {icon:'🔄', color:'var(--purple)', label:'Transfert'},
 };
-const PAI_LBL={espece:'💵 Espèces',carte:'💳 CB',carte_bancaire:'💳 CB',carte_popote:'🍲 Carte Popote',dette:'🔖 À dette'};
+const PAI_LBL={
+  espece:'💵 Espèces',
+  carte:'💳 CB',
+  carte_bancaire:'💳 CB',
+  carte_popote:'🍲 Carte Popote',
+  dette:'🔖 À dette',
+  mixte:'💵+💳 Mixte',
+  coffre:'🔐 Coffre',
+};
 
 function histHTML(h){
-const c=TYPE_CFG[h.type]||{icon:'📋',color:'var(--text2)'};
-const pos=h.montant>=0;
-return`<div class="history-item">
-<div class="history-icon" style="background:${c.color}22;color:${c.color}">${c.icon}</div>
-<div class="history-body">
-<div class="history-title">${h.label}</div>
-<div class="history-detail">${fmtDate(h.ts)}${h.paiement?` · ${PAI_LBL[h.paiement]||h.paiement}`:''}${h.articles?` · ${h.articles}`:''}${h.note?` · ${h.note}`:''}</div>
-</div>
-<div class="history-amount ${pos?'text-green':'text-red'}">${pos?'+':''}${fmt(Math.abs(h.montant))}</div>
-</div>`;
+  const c=TYPE_CFG[h.type]||{icon:'📋',color:'var(--text2)',label:'Autre'};
+  const pos=h.montant>0;
+  const zero=h.montant===0;
+  const montantColor=zero?'var(--text2)':pos?'var(--green)':'var(--red)';
+  const montantStr=zero?'—':(pos?'+':'')+fmt(Math.abs(h.montant));
+
+  // Construire les détails de façon lisible
+  const details=[];
+  if(h.paiement&&PAI_LBL[h.paiement])details.push(PAI_LBL[h.paiement]);
+  if(h.articles)details.push(`📦 ${h.articles}`);
+  if(h.note&&h.note!==h.label)details.push(h.note);
+
+  return`<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+    <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:${c.color}22;color:${c.color}">${c.icon}</div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="font-weight:600;font-size:13px;line-height:1.3">${h.label}</div>
+        <div style="font-family:var(--font-mono);font-weight:700;font-size:14px;color:${montantColor};flex-shrink:0">${montantStr}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-top:3px;font-family:var(--font-mono)">${fmtDate(h.ts)}</div>
+      ${details.length?`<div style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.4">${details.join(' · ')}</div>`:''}
+    </div>
+  </div>`;
 }
 function renderHistory(){
 const s=(document.getElementById('search-history')?.value||'').toLowerCase();
@@ -3506,6 +3477,124 @@ function renderTopArticles(){
       </div>
     </div>`;
   }).join('');
+}
+
+// ================================================
+// CORRECTIONS ET NOUVELLES FONCTIONNALITÉS
+// ================================================
+
+// Courses : alerte stock faible
+function ouvrirCoursesAlerte(){
+  const low=db.articles.filter(a=>(a.type==='stock'||!a.type)&&a.qte!=null&&a.qte<=a.stockMin);
+  const el=document.getElementById('courses-alerte-list');
+  if(!low.length){
+    el.innerHTML='<div class="alert alert-success">✅ Tous les stocks sont au-dessus du minimum !</div>';
+  }else{
+    el.innerHTML=low.map(a=>{
+      const cat=db.categories.find(c=>c.id===a.categorieId);
+      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:8px;border:1px solid #5a2020">
+        <div>
+          <div style="font-weight:600">${a.nom}</div>
+          <div style="font-size:11px;color:var(--text2)">${cat?`${cat.emoji} ${cat.nom}`:'Sans catégorie'}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="badge badge-red">${a.qte} restant</span>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">min: ${a.stockMin}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  openModal('modal-courses-alerte');
+}
+
+// Courses : paiement mixte
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('courses-paiement')?.addEventListener('change',function(){
+    document.getElementById('courses-mixte-zone').style.display=this.value==='mixte'?'block':'none';
+  });
+});
+
+// Supprimer une carte Popote (sous PIN)
+function ouvrirSupprimerCarte(clientId){
+  demanderPin(()=>{
+    const client=db.clients.find(c=>c.id===clientId);if(!client)return;
+    const el=document.getElementById('supprimer-carte-list');
+    if(!client.cartes.length){el.innerHTML='<div class="text-muted">Aucune carte</div>';openModal('modal-supprimer-carte');return;}
+    const lb={espece:'💵',carte:'💳',dette:'🔖'};
+    el.innerHTML=`<div class="alert alert-warning" style="margin-bottom:12px">⚠️ La suppression est irréversible.</div>`+
+    [...client.cartes].reverse().map((carte,i)=>{
+      const idx=client.cartes.length-1-i;
+      const badgeClass=carte.statut==='active'?'badge-yellow':carte.statut==='en_attente'?'badge-blue':'badge-gray';
+      const bl=carte.statut==='active'?'Active':carte.statut==='en_attente'?'En attente':'Soldée';
+      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)">
+        <div>
+          <div style="font-size:12px;color:var(--text2)">Carte #${idx+1} · ${new Date(carte.dateCreation).toLocaleDateString('fr-FR')}</div>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <span class="badge ${badgeClass}">${bl}</span>
+            ${carte.paiementOuverture?`<span class="badge badge-gray">${lb[carte.paiementOuverture]||''}</span>`:''}
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="confirmerSupprimerCarte('${clientId}','${carte.id}')">🗑️</button>
+      </div>`;
+    }).join('');
+    closeModal('modal-client-detail');
+    openModal('modal-supprimer-carte');
+  });
+}
+
+function confirmerSupprimerCarte(clientId,carteId){
+  const client=db.clients.find(c=>c.id===clientId);if(!client)return;
+  const carte=client.cartes.find(c=>c.id===carteId);if(!carte)return;
+
+  // Si la carte était à dette et pas encore soldée → retirer la dette correspondante
+  if(carte.paiementOuverture==='dette'&&carte.statut!=='soldee'){
+    const montantDette=10; // une carte = 10€
+    client.dette=Math.max(0,Math.round(((client.dette||0)-montantDette)*100)/100);
+  }
+
+  client.cartes=client.cartes.filter(c=>c.id!==carteId);
+  addHistorique({type:'sortie',label:`Suppression carte — ${client.nom}`,montant:0,paiement:null,clientId,note:'Carte supprimée manuellement (correction erreur)'});
+  saveDB();closeModal('modal-supprimer-carte');
+  toast('✅ Carte supprimée et dette mise à jour');
+}
+
+// Proposer nouvelle carte quand client n'a pas de carte active
+let _proposerCartePaiement=null,_proposerCarteClientId=null,_proposerCarteTotal=null;
+
+function proposerNouvelleCarte(clientId,total){
+  _proposerCarteClientId=clientId;_proposerCarteTotal=total;_proposerCartePaiement=null;
+  const client=db.clients.find(c=>c.id===clientId);
+  document.getElementById('proposer-carte-info').innerHTML=`Client : <strong>${client.nom}</strong><br>Total à encaisser : <strong style="color:var(--accent)">${fmt(total)}</strong>`;
+  document.querySelectorAll('#proposer-carte-paiement .paiement-card').forEach(el=>el.classList.remove('selected'));
+  openModal('modal-proposer-carte');
+}
+
+function selectProposerCartePaiement(mode){
+  _proposerCartePaiement=mode;
+  document.querySelectorAll('#proposer-carte-paiement .paiement-card').forEach(el=>el.classList.toggle('selected',el.dataset.mode===mode));
+}
+
+function validerProposerCarte(){
+  if(!_proposerCartePaiement){toast('❌ Choisis un mode de paiement pour la carte');return;}
+  const client=db.clients.find(c=>c.id===_proposerCarteClientId);if(!client)return;
+  // Ouvrir la carte
+  const carte=newCarte(client.id);
+  carte.paiementOuverture=_proposerCartePaiement;
+  carte.statut='active';
+  client.cartes.push(carte);
+  if(_proposerCartePaiement==='espece')db.caisse.liquide+=10;
+  else if(_proposerCartePaiement==='carte')db.caisse.compte+=10;
+  else client.dette=Math.round(((client.dette||0)+10)*100)/100;
+  addHistorique({type:'achat_carte',label:`Ouverture carte — ${client.nom}`,montant:_proposerCartePaiement==='dette'?0:10,paiement:_proposerCartePaiement,clientId:client.id});
+  saveDB();closeModal('modal-proposer-carte');
+  // Maintenant encaisser sur la nouvelle carte
+  const total=_proposerCarteTotal;
+  const casesN=Math.round(total/CASE_VAL);
+  cocherCasesSimple(client,carte,casesN);
+  addHistorique({type:'vente',label:`Vente carte — ${client.nom}`,montant:total,paiement:'carte_popote',clientId:client.id});
+  _decrementerStockVente(Object.entries(venteArticles));
+  saveDB();venteReset();
+  toast(`✅ Carte ouverte et vente encaissée !`);
 }
 
 appliquerParams();
