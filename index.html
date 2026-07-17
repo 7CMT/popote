@@ -654,11 +654,16 @@ Appuie pour ajouter au ticket ↓
 <div class="modal-title">📦 Nouvel article</div>
 <div class="form-group">
 <label class="form-label">Type d'article</label>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="na-type-choix">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="na-type-choix">
 <div class="paiement-card selected" data-type="stock" onclick="selectTypeArticle('stock')" style="padding:10px 6px;text-align:center">
 <div style="font-size:18px;margin-bottom:3px">📦</div>
 <div style="font-size:11px;font-weight:600">Stock suivi</div>
 <div style="font-size:10px;color:var(--text2);margin-top:1px">Canettes, snacks...</div>
+</div>
+<div class="paiement-card" data-type="service" onclick="selectTypeArticle('service')" style="padding:10px 6px;text-align:center">
+<div style="font-size:18px;margin-bottom:3px">☕</div>
+<div style="font-size:11px;font-weight:600">Service</div>
+<div style="font-size:10px;color:var(--text2);margin-top:1px">Café, coupe...</div>
 </div>
 <div class="paiement-card" data-type="repas" onclick="selectTypeArticle('repas')" style="padding:10px 6px;text-align:center">
 <div style="font-size:18px;margin-bottom:3px">🥘</div>
@@ -704,10 +709,14 @@ Appuie pour ajouter au ticket ↓
 <input type="hidden" id="ea-id">
 <div class="form-group">
 <label class="form-label">Type</label>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="ea-type-choix">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="ea-type-choix">
 <div class="paiement-card selected" data-type="stock" onclick="selectTypeArticleEdit('stock')" style="padding:10px 6px;text-align:center">
 <div style="font-size:16px;margin-bottom:2px">📦</div>
 <div style="font-size:11px;font-weight:600">Stock</div>
+</div>
+<div class="paiement-card" data-type="service" onclick="selectTypeArticleEdit('service')" style="padding:10px 6px;text-align:center">
+<div style="font-size:16px;margin-bottom:2px">☕</div>
+<div style="font-size:11px;font-weight:600">Service</div>
 </div>
 <div class="paiement-card" data-type="repas" onclick="selectTypeArticleEdit('repas')" style="padding:10px 6px;text-align:center">
 <div style="font-size:16px;margin-bottom:2px">🥘</div>
@@ -1176,7 +1185,7 @@ document.getElementById('caisse-summary').innerHTML=`
 <div class="stat-box"><div class="stat-label">💳 Compte</div><div class="stat-value blue">${fmt(db.caisse.compte)}</div></div>
 </div>
 <div class="stat-box mt-16"><div class="stat-label">Total</div><div class="stat-value yellow">${fmt(total)}</div></div>`;
-let vA=0,vV=0;db.articles.forEach(a=>{vA+=a.qte*a.prixAchat;vV+=a.qte*a.prixVente;});
+let vA=0,vV=0;db.articles.filter(a=>a.type==='stock'||(!a.type&&a.qte!=null)).forEach(a=>{vA+=(a.qte||0)*(a.prixAchat||0);vV+=(a.qte||0)*(a.prixVente||0);});
 document.getElementById('stock-summary').innerHTML=`
 <div class="stat-box mb-16"><div class="stat-label">Valeur achat</div><div class="stat-value red">${fmt(vA)}</div></div>
 <div class="stat-box mb-16"><div class="stat-label">Valeur vente</div><div class="stat-value blue">${fmt(vV)}</div></div>
@@ -1883,22 +1892,16 @@ let _boissonSelectee=null; // la boisson choisie dans le modal
 function venteAddArticle(articleId){
 const art=db.articles.find(a=>a.id===articleId);
 if(!art)return;
-const isPrestation=art.type==='prestation';
 const isRepas=art.type==='repas';
-
-// Pour un repas → ouvrir le modal de choix de boisson
-if(isRepas){
-_repasEnCours=art;
-_boissonSelectee=null;
-ouvrirChoixBoisson(art);
-return;
-}
-
-if(!isPrestation&&art.qte<=0)return;
+const isService=art.type==='service';
+const isPrestation=art.type==='prestation';
+const noStock=isRepas||isService||isPrestation;
+if(isRepas){_repasEnCours=art;_boissonSelectee=null;ouvrirChoixBoisson(art);return;}
+if(!noStock&&(art.qte||0)<=0)return;
 const qteEnTicket=venteArticles[articleId]?.qte||0;
-if(!isPrestation&&qteEnTicket>=art.qte){toast(`❌ Stock max (${art.qte})`);return;}
+if(!noStock&&qteEnTicket>=(art.qte||0)){toast(`❌ Stock max (${art.qte})`);return;}
 if(venteArticles[articleId])venteArticles[articleId].qte++;
-else venteArticles[articleId]={nom:art.nom,prixVente:art.prixVente,prixAchat:art.prixAchat,qte:1,isPrestation};
+else venteArticles[articleId]={nom:art.nom,prixVente:art.prixVente,prixAchat:art.prixAchat,qte:1,isPrestation:noStock};
 renderArticlesGrid();renderTicket();
 }
 
@@ -2555,26 +2558,26 @@ else f=f.filter(a=>a.categorieId===_stockCatFiltre);
 const tbody=document.getElementById('stock-tbody');
 if(!f.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:24px">Aucun article</td></tr>';return;}
 tbody.innerHTML=f.map(a=>{
-const isPrestation=a.type==='prestation';
 const isRepas=a.type==='repas';
-const isStock=a.type==='stock'||!a.type;
+const isService=a.type==='service';
+const isStock=a.type==='stock'||(!a.type&&a.qte!=null);
 const cat=db.categories.find(c=>c.id===a.categorieId);
-const m=(isStock&&a.prixAchat>0)?((a.prixVente-a.prixAchat)/a.prixAchat*100).toFixed(0):'—';
-const low=isStock&&a.qte<=a.stockMin;
+const m=(isStock&&(a.prixAchat||0)>0)?((a.prixVente-(a.prixAchat||0))/(a.prixAchat||1)*100).toFixed(0):(isService&&(a.prixVente||0)>0)?'100':'—';
+const low=isStock&&(a.qte||0)<=(a.stockMin||0);
 return`<tr>
 <td>
 <strong>${a.nom}</strong>
 ${isRepas?`<span style="background:#0d2a1a;color:var(--green);font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px">🥘 Repas</span>`:''}
-${isPrestation?`<span style="background:#2a1a3e;color:var(--purple);font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px">🍽️ Prestation</span>`:''}
-${isRepas?`<span style="color:var(--text2);font-size:11px;margin-left:4px">boisson incluse ≤${fmt(a.plafondBoisson||0.75)}</span>`:''}
+${isService?`<span style="background:#2a1a2e;color:#c084fc;font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px">☕ Service</span>`:''}
+${isRepas?`<span style="color:var(--text2);font-size:11px;margin-left:4px">boisson ≤${fmt(a.plafondBoisson||0.75)}</span>`:''}
 ${isStock&&a.unite?`<span style="color:var(--text2);font-size:11px"> (${a.unite})</span>`:''}
 </td>
 <td><span class="badge badge-gray">${cat?`${cat.emoji} ${cat.nom}`:'—'}</span></td>
-<td>${isStock?`<span class="${low?'text-red':'text-green'} mono fw-700">${a.qte}</span>${low?'<span class="badge badge-red" style="margin-left:6px">⚠️</span>':''}`:'<span style="color:var(--text2);font-size:12px">Sans stock</span>'}</td>
+<td>${isStock?`<span class="${low?'text-red':'text-green'} mono fw-700">${a.qte}</span>${low?'<span class="badge badge-red" style="margin-left:6px">⚠️</span>':''}`:'<span style="color:var(--text2);font-size:12px">—</span>'}</td>
 <td class="mono text-muted">${isStock?a.stockMin:'—'}</td>
-<td class="mono text-red">${fmt(a.prixAchat)}</td>
+<td class="mono text-red">${isService?'—':fmt(a.prixAchat)}</td>
 <td class="mono text-yellow">${fmt(a.prixVente)}</td>
-<td class="mono text-green">+${m}%</td>
+<td class="mono text-green">${m==='—'?'—':'+'+m+'%'}</td>
 <td><button class="btn btn-secondary btn-sm" onclick="editArticle('${a.id}')">✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteArticle('${a.id}')">🗑️</button></td>
 </tr>`;
 }).join('');
