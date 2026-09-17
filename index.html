@@ -672,10 +672,21 @@ Appuie pour ajouter au ticket ↓
 </div>
 </div>
 </div>
-<div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="na-nom" placeholder="Ex: Repas 4€, Repas midi..."></div>
+<div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="na-nom" placeholder="Ex: Monster, Café, Repas..."></div>
 <div class="grid-2">
 <div class="form-group"><label class="form-label">Prix achat (€)</label><input class="form-input" type="number" id="na-achat" placeholder="0.00" step="0.01"></div>
-<div class="form-group"><label class="form-label">Prix vente (€)</label><input class="form-input" type="number" id="na-vente" placeholder="0.00" step="0.01"></div>
+<div class="form-group"><label class="form-label">Prix vente compagnie (€)</label><input class="form-input" type="number" id="na-vente" placeholder="0.00" step="0.01"></div>
+</div>
+<!-- Double prix -->
+<div class="form-group" style="background:var(--surface2);border-radius:10px;padding:12px">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+<input type="checkbox" id="na-double-prix" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" onchange="toggleDoublePrixNA()">
+<label for="na-double-prix" style="font-weight:600;cursor:pointer">💰 Deux prix (interne + extérieur)</label>
+</div>
+<div id="na-prix-ext-zone" style="display:none">
+<div class="form-group" style="margin:0"><label class="form-label">Prix extérieur (€)</label><input class="form-input" type="number" id="na-vente-ext" placeholder="0.00" step="0.01"></div>
+<div style="font-size:11px;color:var(--text2);margin-top:6px">À la vente, tu pourras choisir entre prix compagnie et prix extérieur.</div>
+</div>
 </div>
 <div id="na-stock-fields">
 <div class="grid-2">
@@ -727,7 +738,17 @@ Appuie pour ajouter au ticket ↓
 <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="ea-nom"></div>
 <div class="grid-2">
 <div class="form-group"><label class="form-label">Prix achat (€)</label><input class="form-input" type="number" id="ea-achat" step="0.01"></div>
-<div class="form-group"><label class="form-label">Prix vente (€)</label><input class="form-input" type="number" id="ea-vente" step="0.01"></div>
+<div class="form-group"><label class="form-label">Prix vente compagnie (€)</label><input class="form-input" type="number" id="ea-vente" step="0.01"></div>
+</div>
+<!-- Double prix -->
+<div class="form-group" style="background:var(--surface2);border-radius:10px;padding:12px">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+<input type="checkbox" id="ea-double-prix" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" onchange="toggleDoublePrixEA()">
+<label for="ea-double-prix" style="font-weight:600;cursor:pointer">💰 Deux prix (interne + extérieur)</label>
+</div>
+<div id="ea-prix-ext-zone" style="display:none">
+<div class="form-group" style="margin:0"><label class="form-label">Prix extérieur (€)</label><input class="form-input" type="number" id="ea-vente-ext" placeholder="0.00" step="0.01"></div>
+</div>
 </div>
 <div id="ea-stock-fields">
 <div class="grid-2">
@@ -1040,6 +1061,19 @@ Appuie pour ajouter au ticket ↓
       <button class="btn btn-secondary" onclick="closeModal('modal-supprimer-carte')">Fermer</button>
     </div>
   </div>
+</div>
+
+<!-- Choix du prix à la vente -->
+<div class="modal-overlay" id="modal-choix-prix">
+<div class="modal" style="max-width:360px;text-align:center">
+<div style="font-size:32px;margin-bottom:8px">💰</div>
+<div class="modal-title" style="justify-content:center" id="choix-prix-titre">Quel prix ?</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0">
+<button id="choix-prix-interne" onclick="validerChoixPrix('interne')" style="padding:20px 12px;border-radius:12px;border:2px solid var(--accent);background:var(--accent)22;cursor:pointer;font-size:15px;font-weight:700;color:var(--accent)"></button>
+<button id="choix-prix-externe" onclick="validerChoixPrix('externe')" style="padding:20px 12px;border-radius:12px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:700;color:var(--text)"></button>
+</div>
+<button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="closeModal('modal-choix-prix')">Annuler</button>
+</div>
 </div>
 
 <div id="toast"></div>
@@ -1897,6 +1931,8 @@ const isService=art.type==='service';
 const isPrestation=art.type==='prestation';
 const noStock=isRepas||isService||isPrestation;
 if(isRepas){_repasEnCours=art;_boissonSelectee=null;ouvrirChoixBoisson(art);return;}
+// Double prix → ouvrir modal de choix
+if(art.prixVenteExt&&art.prixVenteExt>0){ouvrirChoixPrix(articleId);return;}
 if(!noStock&&(art.qte||0)<=0)return;
 const qteEnTicket=venteArticles[articleId]?.qte||0;
 if(!noStock&&qteEnTicket>=(art.qte||0)){toast(`❌ Stock max (${art.qte})`);return;}
@@ -2291,8 +2327,9 @@ lines.forEach(([id,v])=>{
     const art=db.articles.find(a=>a.id===v.boissonArticleId);
     if(art&&(art.type==='stock'||!art.type))art.qte-=v.qte;
   }else if(!v.isPrestation&&!v.isRepas&&!v.isSupplBoisson&&!v.isBoissonIncluse&&!v.isFormule){
-    const art=db.articles.find(a=>a.id===id);
-    // Décrémenter si article de type stock (ou sans type = ancien article)
+    // Utiliser articleRef si présent (cas double prix) sinon utiliser la clé directe
+    const artId=v.articleRef||id;
+    const art=db.articles.find(a=>a.id===artId);
     if(art&&(art.type==='stock'||!art.type))art.qte-=v.qte;
   }
 });
@@ -2576,7 +2613,7 @@ ${isStock&&a.unite?`<span style="color:var(--text2);font-size:11px"> (${a.unite}
 <td>${isStock?`<span class="${low?'text-red':'text-green'} mono fw-700">${a.qte}</span>${low?'<span class="badge badge-red" style="margin-left:6px">⚠️</span>':''}`:'<span style="color:var(--text2);font-size:12px">—</span>'}</td>
 <td class="mono text-muted">${isStock?a.stockMin:'—'}</td>
 <td class="mono text-red">${isService?'—':fmt(a.prixAchat)}</td>
-<td class="mono text-yellow">${fmt(a.prixVente)}</td>
+<td class="mono text-yellow">${fmt(a.prixVente)}${a.prixVenteExt?`<span style="font-size:10px;color:var(--text2);display:block">🌍 ${fmt(a.prixVenteExt)}</span>`:''}</td>
 <td class="mono text-green">${m==='—'?'—':'+'+m+'%'}</td>
 <td><button class="btn btn-secondary btn-sm" onclick="editArticle('${a.id}')">✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteArticle('${a.id}')">🗑️</button></td>
 </tr>`;
@@ -2592,6 +2629,7 @@ const isStock=_naType==='stock';
 const isRepas=_naType==='repas';
 db.articles.push({
 id:uid(),nom,prixAchat,prixVente,
+prixVenteExt:document.getElementById('na-double-prix').checked?(parseFloat(document.getElementById('na-vente-ext').value)||null):null,
 qte:isStock?(parseInt(document.getElementById('na-qte').value)||0):null,
 stockMin:isStock?(parseInt(document.getElementById('na-min').value)||2):null,
 unite:isStock?(document.getElementById('na-unite').value.trim()):'',
@@ -2601,9 +2639,11 @@ plafondBoisson:isRepas?(parseFloat(document.getElementById('na-plafond').value)|
 compteBenef:true,
 });
 saveDB();closeModal('modal-new-article');
-['na-nom','na-achat','na-vente','na-qte','na-min','na-unite'].forEach(id=>document.getElementById(id).value='');
+['na-nom','na-achat','na-vente','na-qte','na-min','na-unite','na-vente-ext'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 document.getElementById('na-categorie').value='';
 document.getElementById('na-plafond').value='0.75';
+document.getElementById('na-double-prix').checked=false;
+document.getElementById('na-prix-ext-zone').style.display='none';
 _naType='stock';selectTypeArticle('stock');
 renderStock();toast(`✅ Article créé`);
 }
@@ -2624,6 +2664,12 @@ document.getElementById('ea-unite').value=a.unite||'';
 document.getElementById('ea-plafond').value=a.plafondBoisson||0.75;
 document.getElementById('ea-categorie').value=a.categorieId||'';
 selectTypeArticleEdit(_eaType);
+// Double prix
+const hasExt=a.prixVenteExt&&a.prixVenteExt>0;
+document.getElementById('ea-double-prix').checked=hasExt;
+document.getElementById('ea-prix-ext-zone').style.display=hasExt?'block':'none';
+if(hasExt)document.getElementById('ea-vente-ext').value=a.prixVenteExt;
+else document.getElementById('ea-vente-ext').value='';
 openModal('modal-edit-article');
 }
 function saveArticle(){
@@ -2633,6 +2679,7 @@ a.nom=document.getElementById('ea-nom').value.trim();
 a.prixAchat=parseFloat(document.getElementById('ea-achat').value)||0;
 a.prixVente=parseFloat(document.getElementById('ea-vente').value);
 a.type=_eaType;
+a.prixVenteExt=document.getElementById('ea-double-prix').checked?(parseFloat(document.getElementById('ea-vente-ext').value)||null):null;
 if(_eaType==='stock'){
 a.qte=parseInt(document.getElementById('ea-qte').value)||0;
 a.stockMin=parseInt(document.getElementById('ea-min').value)||0;
@@ -3598,6 +3645,45 @@ function validerProposerCarte(){
   _decrementerStockVente(Object.entries(venteArticles));
   saveDB();venteReset();
   toast(`✅ Carte ouverte et vente encaissée !`);
+}
+
+// ================================================
+// DOUBLE PRIX
+// ================================================
+function toggleDoublePrixNA(){
+  const checked=document.getElementById('na-double-prix').checked;
+  document.getElementById('na-prix-ext-zone').style.display=checked?'block':'none';
+}
+function toggleDoublePrixEA(){
+  const checked=document.getElementById('ea-double-prix').checked;
+  document.getElementById('ea-prix-ext-zone').style.display=checked?'block':'none';
+}
+
+let _choixPrixArticleId=null;
+
+function ouvrirChoixPrix(articleId){
+  const art=db.articles.find(a=>a.id===articleId);if(!art)return;
+  _choixPrixArticleId=articleId;
+  document.getElementById('choix-prix-titre').textContent=art.nom;
+  document.getElementById('choix-prix-interne').innerHTML=`🏠 Compagnie<br><span style="font-size:20px">${fmt(art.prixVente)}</span>`;
+  document.getElementById('choix-prix-externe').innerHTML=`🌍 Extérieur<br><span style="font-size:20px">${fmt(art.prixVenteExt)}</span>`;
+  openModal('modal-choix-prix');
+}
+
+function validerChoixPrix(type){
+  const art=db.articles.find(a=>a.id===_choixPrixArticleId);if(!art)return;
+  const prix=type==='externe'?art.prixVenteExt:art.prixVente;
+  const nomAffiche=type==='externe'?`${art.nom} 🌍`:art.nom;
+  closeModal('modal-choix-prix');
+  // Ajouter au ticket avec le bon prix
+  const ticketKey=_choixPrixArticleId+'_'+type;
+  const isService=art.type==='service'||art.type==='prestation';
+  const isStock=art.type==='stock'||(!art.type&&art.qte!=null);
+  if(isStock&&(art.qte||0)<=0){toast('❌ Rupture de stock');return;}
+  if(venteArticles[ticketKey])venteArticles[ticketKey].qte++;
+  else venteArticles[ticketKey]={nom:nomAffiche,prixVente:prix,prixAchat:art.prixAchat,qte:1,isPrestation:!isStock,articleRef:_choixPrixArticleId};
+  renderArticlesGrid();renderTicket();
+  _choixPrixArticleId=null;
 }
 
 appliquerParams();
