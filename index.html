@@ -677,6 +677,12 @@ Appuie pour ajouter au ticket ↓
 <div class="form-group"><label class="form-label">Prix achat (€)</label><input class="form-input" type="number" id="na-achat" placeholder="0.00" step="0.01"></div>
 <div class="form-group"><label class="form-label">Prix vente compagnie (€)</label><input class="form-input" type="number" id="na-vente" placeholder="0.00" step="0.01"></div>
 </div>
+<!-- Quantité décomptée par vente -->
+<div class="form-group">
+<label class="form-label">Quantité décomptée par vente</label>
+<input class="form-input" type="number" id="na-qte-vente" value="1" min="1" step="1" placeholder="1">
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Ex: café = 2 dosettes par vente → mettre 2</div>
+</div>
 <!-- Double prix -->
 <div class="form-group" style="background:var(--surface2);border-radius:10px;padding:12px">
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -739,6 +745,12 @@ Appuie pour ajouter au ticket ↓
 <div class="grid-2">
 <div class="form-group"><label class="form-label">Prix achat (€)</label><input class="form-input" type="number" id="ea-achat" step="0.01"></div>
 <div class="form-group"><label class="form-label">Prix vente compagnie (€)</label><input class="form-input" type="number" id="ea-vente" step="0.01"></div>
+</div>
+<!-- Quantité décomptée par vente -->
+<div class="form-group">
+<label class="form-label">Quantité décomptée par vente</label>
+<input class="form-input" type="number" id="ea-qte-vente" value="1" min="1" step="1">
+<div style="font-size:11px;color:var(--text2);margin-top:4px">Ex: café = 2 dosettes par vente → mettre 2</div>
 </div>
 <!-- Double prix -->
 <div class="form-group" style="background:var(--surface2);border-radius:10px;padding:12px">
@@ -1933,9 +1945,9 @@ const noStock=isRepas||isService||isPrestation;
 if(isRepas){_repasEnCours=art;_boissonSelectee=null;ouvrirChoixBoisson(art);return;}
 // Double prix → ouvrir modal de choix
 if(art.prixVenteExt&&art.prixVenteExt>0){ouvrirChoixPrix(articleId);return;}
-if(!noStock&&(art.qte||0)<=0)return;
+if(!noStock&&(art.qte||0)<(art.qteVente||1))return;
 const qteEnTicket=venteArticles[articleId]?.qte||0;
-if(!noStock&&qteEnTicket>=(art.qte||0)){toast(`❌ Stock max (${art.qte})`);return;}
+if(!noStock&&(qteEnTicket+1)*(art.qteVente||1)>(art.qte||0)){toast(`❌ Stock insuffisant (${art.qte} restants, ${art.qteVente||1} par vente)`);return;}
 if(venteArticles[articleId])venteArticles[articleId].qte++;
 else venteArticles[articleId]={nom:art.nom,prixVente:art.prixVente,prixAchat:art.prixAchat,qte:1,isPrestation:noStock};
 renderArticlesGrid();renderTicket();
@@ -2327,10 +2339,12 @@ lines.forEach(([id,v])=>{
     const art=db.articles.find(a=>a.id===v.boissonArticleId);
     if(art&&(art.type==='stock'||!art.type))art.qte-=v.qte;
   }else if(!v.isPrestation&&!v.isRepas&&!v.isSupplBoisson&&!v.isBoissonIncluse&&!v.isFormule){
-    // Utiliser articleRef si présent (cas double prix) sinon utiliser la clé directe
     const artId=v.articleRef||id;
     const art=db.articles.find(a=>a.id===artId);
-    if(art&&(art.type==='stock'||!art.type))art.qte-=v.qte;
+    if(art&&(art.type==='stock'||!art.type)){
+      const multiplicateur=art.qteVente||1;
+      art.qte-=v.qte*multiplicateur;
+    }
   }
 });
 }
@@ -2610,7 +2624,7 @@ ${isRepas?`<span style="color:var(--text2);font-size:11px;margin-left:4px">boiss
 ${isStock&&a.unite?`<span style="color:var(--text2);font-size:11px"> (${a.unite})</span>`:''}
 </td>
 <td><span class="badge badge-gray">${cat?`${cat.emoji} ${cat.nom}`:'—'}</span></td>
-<td>${isStock?`<span class="${low?'text-red':'text-green'} mono fw-700">${a.qte}</span>${low?'<span class="badge badge-red" style="margin-left:6px">⚠️</span>':''}`:'<span style="color:var(--text2);font-size:12px">—</span>'}</td>
+<td>${isStock?`<span class="${low?'text-red':'text-green'} mono fw-700">${a.qte}</span>${a.qteVente>1?`<span style="font-size:10px;color:var(--accent);margin-left:4px">(×${a.qteVente}/vente)</span>`:''}${low?'<span class="badge badge-red" style="margin-left:6px">⚠️</span>':''}`:'<span style="color:var(--text2);font-size:12px">—</span>'}</td>
 <td class="mono text-muted">${isStock?a.stockMin:'—'}</td>
 <td class="mono text-red">${isService?'—':fmt(a.prixAchat)}</td>
 <td class="mono text-yellow">${fmt(a.prixVente)}${a.prixVenteExt?`<span style="font-size:10px;color:var(--text2);display:block">🌍 ${fmt(a.prixVenteExt)}</span>`:''}</td>
@@ -2630,6 +2644,7 @@ const isRepas=_naType==='repas';
 db.articles.push({
 id:uid(),nom,prixAchat,prixVente,
 prixVenteExt:document.getElementById('na-double-prix').checked?(parseFloat(document.getElementById('na-vente-ext').value)||null):null,
+qteVente:parseInt(document.getElementById('na-qte-vente').value)||1,
 qte:isStock?(parseInt(document.getElementById('na-qte').value)||0):null,
 stockMin:isStock?(parseInt(document.getElementById('na-min').value)||2):null,
 unite:isStock?(document.getElementById('na-unite').value.trim()):'',
@@ -2640,6 +2655,7 @@ compteBenef:true,
 });
 saveDB();closeModal('modal-new-article');
 ['na-nom','na-achat','na-vente','na-qte','na-min','na-unite','na-vente-ext'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+document.getElementById('na-qte-vente').value='1';
 document.getElementById('na-categorie').value='';
 document.getElementById('na-plafond').value='0.75';
 document.getElementById('na-double-prix').checked=false;
@@ -2664,6 +2680,7 @@ document.getElementById('ea-unite').value=a.unite||'';
 document.getElementById('ea-plafond').value=a.plafondBoisson||0.75;
 document.getElementById('ea-categorie').value=a.categorieId||'';
 selectTypeArticleEdit(_eaType);
+document.getElementById('ea-qte-vente').value=a.qteVente||1;
 // Double prix
 const hasExt=a.prixVenteExt&&a.prixVenteExt>0;
 document.getElementById('ea-double-prix').checked=hasExt;
@@ -2679,6 +2696,7 @@ a.nom=document.getElementById('ea-nom').value.trim();
 a.prixAchat=parseFloat(document.getElementById('ea-achat').value)||0;
 a.prixVente=parseFloat(document.getElementById('ea-vente').value);
 a.type=_eaType;
+a.qteVente=parseInt(document.getElementById('ea-qte-vente').value)||1;
 a.prixVenteExt=document.getElementById('ea-double-prix').checked?(parseFloat(document.getElementById('ea-vente-ext').value)||null):null;
 if(_eaType==='stock'){
 a.qte=parseInt(document.getElementById('ea-qte').value)||0;
